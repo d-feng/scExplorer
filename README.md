@@ -21,6 +21,10 @@ http://54.159.6.229/analysis.html
 http://54.159.6.229/install.html
 
 ### Installation of Single Cell Explorer from Source
+
+##### quickest way: run setup shell scripts from http://54.159.6.229/downloads/setupSCexplorer.sh
+
+### From console (step by step)
 #### Update (based on ubuntu 18.04 or 16.04)
 
 ###### sudo apt-get update
