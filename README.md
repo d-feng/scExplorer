@@ -14,7 +14,7 @@ Contact: di_feng@yahoo.com
 http://54.159.6.229/download.html
 
 ### Notebook URL: 
-http://54.159.6.229:8001/
+http://54.159.6.229/analysis.html
 
 ### Installation guide 
 http://54.159.6.229/install.html
