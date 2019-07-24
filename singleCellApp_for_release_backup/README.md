@@ -64,13 +64,6 @@ http://54.159.6.229/install.html
 
 ###### python3 manage.py runserver 0.0.0.0:8000
     
-#### Pipeline basic installation
-
-###### pip3 install sklearn numpy scipy jupyter pymongo leidenalg scanpy>4.0 --upgrade
-
-###### wget http://54.159.6.229/downloads/scpipeline.py
-
-
 ### Start django web application using gunicorn
 
 ###### cd singleCellApp
