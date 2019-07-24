@@ -11,10 +11,10 @@ Contact: di_feng@yahoo.com
 
 ##### http://54.159.6.229:8000/
 
-### source code, database files, python scripts for Jupyter notebook
+### Source code, database files, python scripts for Jupyter notebook
 http://54.159.6.229/download.html
 
-### Notebook URL: 
+### Jupyter Notebook walkthrough 
 http://54.159.6.229/analysis.html
 
 ### Installation guide 
