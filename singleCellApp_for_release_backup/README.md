@@ -1,20 +1,19 @@
 # Single Cell Explorer 
-Thank you for visiting wiki of Single Cell Explorer. We hope our python/js stack will facilitate the collaboration between computational and experimental biologists to better use single cell sequencing data. 
+Thank you for visiting wiki of Single Cell Explorer. 
 
-Authors: Dechao Shan, Di Feng
+Authors: Di Feng, Dechao Shan
 
 Contact: di_feng@yahoo.com
 
 ### Site URL: 
-http://singlecellexplorer.org
-http://54.159.6.229:8000/
+##### http://singlecellexplorer.org
 
+##### http://54.159.6.229:8000/
 
 ### source code, database files, python scripts for Jupyter notebook
 http://54.159.6.229/download.html
 
-### Jupyter Notebook guide URL:
-##### You need to download http://54.159.6.229/downloads/scpipeline.py to your Jupyter Notebook directory so that you can import the function to load your analysis into database, see example code here   
+### Notebook URL: 
 http://54.159.6.229/analysis.html
 
 ### Installation guide 
