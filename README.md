@@ -19,7 +19,7 @@ http://54.159.6.229/analysis.html
 ### Installation guide 
 http://54.159.6.229/install.html
 
-#### Installation of Single Cell Explorer
+### Installation of Single Cell Explorer from Source
 #### Update (based on ubuntu 18.04 or 16.04)
 
 ###### sudo apt-get update
