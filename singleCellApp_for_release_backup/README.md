@@ -64,9 +64,3 @@ http://54.159.6.229/install.html
 
 ###### python3 manage.py runserver 0.0.0.0:8000
     
-### Start django web application using gunicorn
-
-###### cd singleCellApp
-
-###### gunicorn singleCell.wsgi:application -b 0.0.0.0:8000
-
