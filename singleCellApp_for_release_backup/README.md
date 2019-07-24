@@ -14,7 +14,8 @@ archived in manuial.zip file.
 ### source code, database files, python scripts for Jupyter notebook
 http://54.159.6.229/download.html
 
-### Notebook URL: 
+### Jupyter Notebook guide URL:
+##### You need to download http://54.159.6.229/downloads/scpipeline.py to your Jupyter Notebook directory so that you can import the function to load your analysis into database, see example code here   
 http://54.159.6.229:8001/
 
 ### Installation guide 
