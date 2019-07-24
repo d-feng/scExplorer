@@ -1,0 +1,7 @@
+{
+  "database_host":"localhost",
+  "database_port":"27017",
+  "database_name":"scDB",
+  "admin_password":"admin123"
+  
+}

@@ -1,0 +1,4421 @@
+<!DOCTYPE html>
+<html class="full-height" lang="en-US">
+	<head>
+		{% load static %}
+
+		<meta charset="UTF-8">
+		<meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<title>Single Cell Explorer</title>
+
+		{% include	"common/libx1.html"	%}
+
+
+		<style type="text/css">
+
+			html, body{
+				min-height: 100% !important;
+				height: 100%;
+				min-width:860px;
+			}
+
+			#tooltip{
+				position: absolute;
+				opacity: 0.9;
+				padding: 2px;
+				font: 12px sans-serif;
+				background: lightsteelblue;
+				background-opacity:0.7;
+				border: 0px;
+				border-radius: 8px;
+				pointer-events: none;
+				display: none;
+			}
+
+			.mydropdown {
+				position: relative;
+				display: inline-block;
+			}
+
+			.mydropdown-content {
+			  display: none;
+			  position: absolute;
+			  background-color: #f9f9f9;
+			  min-width: 200px;
+			  max-height: 300px;
+			  overflow-y: auto;
+			  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+			  padding: 12px 16px;
+			  z-index: 1000;
+			}
+
+			.mydropdown:hover .mydropdown-content {
+			  display: block;
+			}
+
+
+			.mydropdown-toggle{
+				cursor:pointer;
+				color:steelblue;
+			}
+
+
+			.checkicon{
+				color:steelblue;
+				cursor:pointer;
+			}
+
+			#markersdropdown-content {
+				display: none;
+				position: absolute;
+				background-color: #f9f9f9;
+				min-width: 200px;
+				max-height: 500px;
+				overflow-y: auto;
+				box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+				padding: 3px 3px;
+				z-index: 1000;
+			}
+
+	 	
+
+		</style>
+
+	</head>
+
+	<body style="min-width: 980px">
+
+
+		<nav class="navbar navbar-expand-sm navbar-light bg-light static-top">
+				
+			<a class="navbar-brand" href="/">	 Single Cell Explorer	</a>
+			<span style='width: 60px;'></span>
+			<ul class="navbar-nav" name='applinks'>
+				<li class="nav-item" style='cursor: pointer;'>
+					<a class="nav-link" name='linktosamples' href="/">Index</a>
+				</li>
+				<li class="nav-item" style='cursor: pointer;'>
+					<a class="nav-link"  href="http://54.159.6.229">Documents</a>
+				</li>
+				<!--li class="nav-item" style='cursor: pointer;'>
+					<a class="nav-link" name='linktoplot' href="/plots">Comparison</a>
+				</li-->
+
+				<!--li class="nav-item" style='cursor: pointer;'>
+					<a class="nav-link" name='linktoML' href="/neuralNetwork">Neural Network</a>
+				</li-->
+
+				<!--li class="nav-item" style='cursor: pointer;'>
+					<a class="nav-link" name='linktoadmin' href="/administration">Admin</a>
+				</li-->
+
+			</ul>
+
+		</nav>
+
+
+		
+		<div style="height: 13px;"></div>
+		<div class="container-fluid" style="height: calc(100% - 87px);">
+			<div class='row h-100' style="min-height: 340px;" id='app'>
+
+				<div style='width: 66%;' >
+						<div class='col-12 h-100'>
+							<div class='h-100' id='mainpanel'>
+							
+							</div>
+						</div>
+
+				</div>
+				<div style='width: 1%;' >
+						 
+				</div>
+
+				<div style='width: 33%;overflow-y: hidden;'>
+						<div class='h-100' style="margin-right: 8px;overflow-y: hidden;">
+							<div class='h-100' id='infopanel'	style="overflow-y: hidden;">
+									
+
+							</div>
+						</div>
+
+				</div>
+			</div>
+
+
+		</div>
+
+
+
+
+		<div id='loadingcanvas' style="position: fixed;width: 100%;height: 100%;left:0;top:0;background :rgba(192, 192, 192, .6);z-index:99999;display: none;" >
+			<div class="h-100" style="display: flex;justify-content: center;align-items: center;vertical-align: middle;">
+				
+				loading...
+				
+			</div>
+		</div>
+
+
+		 
+		<div id="dragablediv" class='shadow mb-5 bg-white rounded' style="width: 600px;position: absolute;top: 100px;right: 30px;display: none;z-index:2000;">
+			<div class='card'>
+				<div name="dragabledivheader" class="card-header" style='cursor:move;'>
+					<span name='dragablepaneltitle' style='color:steelblue;font-weight: bold;font-size: 20px;'></span>
+
+					<button type="button" class="close" name='closedragablepanel'>
+						<span>&times;</span>
+					</button>
+
+				</div>
+
+				<div class="card-body">				
+
+				</div>
+			</div>
+		</div>
+
+
+
+		<div class="modal" id="defaultModal" tabindex="-1" role="dialog" aria-hidden="true"	style='z-index:99999;'> 
+			<div class="modal-dialog" role="document">
+				<div class="modal-content" >
+					<div class="modal-header">
+						<h5 class="modal-title"></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body" >
+							
+							
+					</div>
+					<div class="modal-footer">
+						 
+					</div>
+				</div>
+			</div>
+		</div>
+
+
+		<div class="modal" id="msgModal" tabindex="-1" role="dialog" aria-hidden="true"	> 
+			<div class="modal-dialog" role="document">
+				<div class="modal-content" >
+					 
+					<div class="modal-body" >
+							
+							
+					</div>
+					
+				</div>
+			</div>
+		</div>
+
+
+		<div id='tooltip'></div>
+
+	</body>
+
+	
+
+	<script type="text/javascript">
+
+		var node ={
+
+			defaultNodeColor :"none",
+			defaultStrokeColor : "#BBBBBB",
+			selectedStrokeColor:"#278BC5",
+			r:4,
+
+		}
+
+
+		var scCanvas={
+
+			id : "maincanvas",
+
+			defaultBG : "#E7E8E9",
+
+			mainXscale:null,
+			mainYscale:null,
+			
+			margin:20,
+			marginLeft:0,
+
+			canvas:null,
+			svg:null,
+			svgid:"mainsvg",
+
+			heatmapid :"heatmapplot",
+
+			clstrColors:{},
+			export:function(){
+				var downloadcanvas ; 
+				if(application.maptype==="scattermap"){
+					downloadcanvas = document.getElementById(scCanvas.id);
+
+				}else if(application.maptype==="heatmap"){
+
+					downloadcanvas = document.getElementById(scCanvas.heatmapid);
+
+				}
+				
+				var img    = downloadcanvas.toDataURL("image/png").replace("image/png", "image/octet-stream");
+				var link = document.createElement('a');
+				link.download = "plot.png";
+				link.href = img;
+				link.click();
+			}
+
+		}
+
+		var barcodesMap={
+
+			exprdata:null,
+			maxexpr:null,
+			minexpr:0,
+			redscale:null,
+
+
+		}
+
+		var heatmap={
+			data:null,
+		}
+
+		var application = {
+			mapid :"{{mapid}}",
+			mapName:null,
+			data:null,
+			
+			clusterTable:null,
+			clusterFilter:null,
+
+			maindiv_id:"#mainpanel",
+			infodiv_id:"#infopanel",
+
+
+			clstrTypes:[],
+
+			model : "normal" ,
+			maptype:"scattermap",
+
+		}
+		
+
+		var loading ={ 
+
+
+			loadingStart:function(){
+
+				$("#loadingcanvas").show();
+
+			},
+			loadingEnd:function(){
+
+				$("#loadingcanvas").hide();
+
+			},
+			loadingError:function(msg){
+
+				$("#loadingcanvas").show();
+				$("#loadingcanvas").html('<div class="h-100" style="display: flex;justify-content: center;align-items: center;vertical-align: middle;"><h1 style="color:#8847E3">'+msg+'</h1></div>')
+			},
+
+			loadingDivStart:function(div){
+				var loadingstr='<div class="h-100" style="display: flex;justify-content: center;align-items: center;vertical-align: middle;"><div class="loader"><div class="dot dot1"><i></i></div><div class="dot dot2"><i></i></div><div class="dot dot3"><i></i></div><div class="dot dot4"><i></i></div><div class="dot dot5"><i></i></div><div class="dot dot6"><i></i></div><div class="dot dot7"><i></i></div><div class="dot dot8"><i></i></div><div class="dot dot9"><i></i></div></div></div>'
+
+				div.html(loadingstr);
+			},
+			loadingDivEnd:function(div){
+				div.html("");
+			},
+			loadingDivError:function(div,msg="server error"){
+
+				div.html(msg);
+			}
+
+		}
+
+		var contrastMethod = {
+
+			displayid: "#dragablediv" ,
+			init:function(){
+				$(contrastMethod.displayid).draggable({
+					
+					handle: "[name='dragabledivheader']"
+				});
+
+				$(contrastMethod.displayid).find("[name='closedragablepanel']").click(function(){					
+
+					$("#dragablediv").hide(300);
+
+				});
+
+
+			},
+			docontrast: function(cellids,target){
+
+				$(contrastMethod.displayid).find("[name='dragablepaneltitle']").html("Contrast result");
+				$(contrastMethod.displayid).show(300);
+				var targetdiv = $(contrastMethod.displayid).find(".card-body");
+				loading.loadingDivStart(targetdiv);
+
+				$.ajax({
+					url:"/contrast",
+					data:{"cells":cellids,"target":target,"sampleid":application.mapid},
+					method:'post',
+					dataType:"JSON",
+					success:function(data){
+						var resultid = data.res;
+						contrastMethod.queryContrastResult(resultid,5000,0,targetdiv,cellids,"cells",target,"new");
+					},error:function(){
+						targetdiv.html("error");
+					}
+				})
+			},
+			docontrast2:function(clusterid,target){
+				$(contrastMethod.displayid).find("[name='dragablepaneltitle']").html("Contrast result");
+				$(contrastMethod.displayid).show(300);
+				var targetdiv = $(contrastMethod.displayid).find(".card-body");
+				loading.loadingDivStart(targetdiv);
+				$.ajax({
+					url:"/contrast2",
+					data:{"clstr":clusterid,"target":target,"sampleid":application.mapid},
+					method:'post',
+					dataType:"JSON",
+					success:function(data){
+						var resultid = data.res;
+						contrastMethod.queryContrastResult(resultid,5000,0,targetdiv,clusterid,"cid",target,"update");
+					},error:function(){
+
+						loading.loadingDivError(targetdiv,"Error");
+
+					}
+
+				})
+
+			},
+			queryContrastResult:function(resultid,waitTime,querytimes,div,data1,dttype,data2,updateornew){
+				if(waitTime>=3000){
+					waitTime = waitTime-1000;
+				}
+				querytimes+=1;
+				setTimeout(function(){
+					$.ajax({
+						url:"/getContrastResult",
+						data:{"resultid":resultid},
+						method:'post',
+						dataType:"JSON",
+						success:function(data){
+							var isdone = data.done;
+							if(isdone){
+								var datares={"p":data["p"],"n":data["n"]};
+								loading.loadingDivEnd(div);
+								contrastMethod.renderbarplotofpvalrank(datares,div,data1,dttype,data2,updateornew);
+							}else{
+								contrastMethod.queryContrastResult(resultid,waitTime,querytimes,div,data1,dttype,data2,updateornew);
+							}
+						},error:function(){
+							div.html("error");
+						}
+
+					})
+
+
+				},waitTime);
+
+
+			},
+			renderbarplotofpvalrank:function(data,div,data1,dttype,data2,updateornew){
+				var p= data.p;
+				var n = data.n;
+				var pdata=[];
+				var ndata=[];
+				var temp=[];
+
+				for(var i =0;i<p.length;i++){
+					var g=p[i];
+					var x =i%7;
+					if(x===0){
+						temp=[g,"","","","","",""];
+					}else if(x ===6){
+						temp[x]=g;
+						pdata.push(temp);
+						temp=[];
+					}else{
+						temp[x]=g;
+					}
+				}
+				if(temp.length>0){
+					pdata.push(temp);
+				}
+				p=null;
+				temp=[];
+				for(var i =0;i<n.length;i++){
+					var g=n[i];
+					var x =i%7;
+
+					if(x===0){
+
+						temp=[g,"","","","","",""];
+
+					}else if(x ===6){
+
+						temp[x]=g;
+						ndata.push(temp);
+						temp=[];
+
+
+					}else{
+						temp[x]=g;
+					}
+
+				}
+				if(temp.length>0){
+
+					ndata.push(temp);
+
+				}
+				n=null;
+				div.html("<h6>Positive Genes</h6><table name='contrastPostable' class='contrasttable table table-striped display table-bordered compact' style='width:100%;'></table><hr></hr><h6>Negative Genes</h6><table name='contrastNagtable' style='width:100%;' class='contrasttable table table-striped display table-bordered compact'></table><hr></hr><div name='plotdiv'></div><hr></hr><div name='saveinfodiv'></div>");
+
+				var posTable=div.find("[name='contrastPostable']").DataTable({
+					searching: false,
+					info: false,
+					"ordering": false,
+					"pageLength": 5,
+					"lengthChange": false,
+									 
+					//"pagingType": "simple",
+					"scrollX": true,
+					fixedHeader: true,
+					data:pdata,
+					"columns": [
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"}, 
+					],
+					"columnDefs": [
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 0
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 1
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 2
+						},
+						{
+							"render": function ( data, type, row ) {
+							 	return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 3
+						},
+						{
+							"render": function ( data, type, row ) {
+								 return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 4
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 5
+						},
+						{
+							"render": function ( data, type, row ) {
+								 return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 6
+						}
+							 
+					]
+						 
+
+				});
+
+				var nagTable=div.find("[name='contrastNagtable']").DataTable({
+					data:ndata,
+					searching: false,
+					info: false,
+					fixedHeader: true,
+					"ordering": false,
+					"pageLength": 5,
+					"lengthChange": false,			 
+					"scrollX": true,
+					"columns": [
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"},
+						{"width": "14.28%"}, 
+					],
+
+					"columnDefs": [
+						{				
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 0
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 1
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 2
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 3
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 4
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 5
+						},
+						{
+							"render": function ( data, type, row ) {
+								return "<div style='font-size:11px;'><span class='genebtn' style='cursor:pointer;'>"+data+"</span><i canselect='F' isselected='F' class='float-right' style='cursor:pointer;color:#D3D3D3'><i class='far fa-square'></i></i></div>";
+							},
+							"targets": 6
+						}
+					]
+				});
+				div.find("th").hide();
+				div.find(".contrasttable").on("click",".genebtn",function(){
+					div.find(".genebtn").css("color","black");
+					var gene=$(this).text();
+					$(this).css("color","steelblue");
+					var thisdiv = $(this);
+					$.ajax({
+						url:"/contrastGeneSearch",
+						data:{"sampleid":application.mapid,"gene":gene,"data1":data1,"dttype":dttype,"data2":data2},
+						method:"post",
+						dataType:"JSON",
+						success:function(data){
+
+							thisdiv.parent().find("[canselect]").attr("canselect","T").css("color","steelblue");
+							
+							var plotdata = data.plot;
+							barcodesMap.exprdata=data.expr;
+							barcodesMap.maxexpr = data.maxval;
+
+							barcodesMap.redscale = d3.scaleLinear().domain([0,barcodesMap.maxexpr]).range(["#ff8080", "#800000"]);
+							renderScatterPlotNodes(null,true);
+
+							div.find("[name='plotdiv']").html("<div id='contrastbarsvgdiv'></div>");
+							renderBarplot2("#contrastbarsvgdiv",plotdata,gene,false);
+						},
+						error:function(){
+							alert("error");
+						}	
+
+					})
+
+				});
+
+
+				div.find("[name='contrastPostable']").on("click","[canselect='T']",function(){
+					var isselected = $(this).attr("isselected");
+					if(isselected==="F"){
+						$(this).attr("isselected","T").html("<i class='far fa-check-square'></i>");
+						var thisgene =	$(this).parent().find(".genebtn").text().trim();
+						var selectedgenes=div.find("[name='saveinfodiv']").find("[name='selectedMarks']").html().trim();
+						selectedgenes=selectedgenes.split(",");
+
+						var resultgenes=[];
+						for(var i in selectedgenes){
+							if(selectedgenes[i] !==thisgene	&& selectedgenes[i] !==""){
+								resultgenes.push(selectedgenes[i])
+							}
+						}
+						resultgenes.push(thisgene);
+						div.find("[name='saveinfodiv']").find("[name='selectedMarks']").html(resultgenes.join(","));
+					}else if(isselected==="T"){
+						$(this).attr("isselected","F").html("<i class='far fa-square'></i>");
+						var thisgene =	$(this).parent().find(".genebtn").text().trim();
+						var selectedgenes=div.find("[name='saveinfodiv']").find("[name='selectedMarks']").html().trim();
+						selectedgenes=selectedgenes.split(",");
+						var resultgenes=[];
+						for(var i in selectedgenes){
+							if(selectedgenes[i] !==thisgene	&& selectedgenes[i] !==""){
+								resultgenes.push(selectedgenes[i])
+							}
+						}
+						div.find("[name='saveinfodiv']").find("[name='selectedMarks']").html(resultgenes.join(","));
+					}
+
+
+				});
+				div.find("[name='contrastNagtable']").on("click","[canselect='T']",function(){
+					var isselected = $(this).attr("isselected");
+					if(isselected==="F"){
+						$(this).attr("isselected","T").html("<i class='far fa-check-square'></i>");
+						var thisgene =	$(this).parent().find(".genebtn").text().trim();
+						var selectedgenes=div.find("[name='saveinfodiv']").find("[name='negselectedMarks']").html().trim();
+						selectedgenes=selectedgenes.split(",");
+
+						var resultgenes=[];
+						for(var i in selectedgenes){
+							if(selectedgenes[i] !==thisgene	&& selectedgenes[i] !==""){
+
+								resultgenes.push(selectedgenes[i])
+							}
+						}
+						resultgenes.push(thisgene);
+						div.find("[name='saveinfodiv']").find("[name='negselectedMarks']").html(resultgenes.join(","));
+
+					}else if(isselected==="T"){
+
+						$(this).attr("isselected","F").html("<i class='far fa-square'></i>");
+
+						var thisgene =	$(this).parent().find(".genebtn").text().trim();
+						var selectedgenes=div.find("[name='saveinfodiv']").find("[name='negselectedMarks']").html().trim();
+						selectedgenes=selectedgenes.split(",");
+
+						var resultgenes=[];
+						for(var i in selectedgenes){
+							if(selectedgenes[i] !==thisgene	&& selectedgenes[i] !==""){
+								resultgenes.push(selectedgenes[i])
+							}
+						}
+						div.find("[name='saveinfodiv']").find("[name='negselectedMarks']").html(resultgenes.join(","));
+					}
+				});
+
+				var savestr='<span>Positive Mark Genes</span><br><div name="selectedMarks" class="card card-body" style="min-height:30px;"></div>';
+				savestr+='<span>Negative Mark Genes</span><br><div name="negselectedMarks" class="card card-body" style="min-height:30px;"></div>';
+				if(updateornew ==="new"){
+					savestr+='<br><div><span>Do you want to save this cluster ?</span>&nbsp;&nbsp;&nbsp;<button class="btn btn-success btn-sm" name="savebtn"> Save </button></div>';
+				}
+				if(updateornew ==="update"){
+
+					savestr+='<br><div><span>Do you want to Update Marks?</span>&nbsp;&nbsp;&nbsp;<button class="btn btn-success btn-sm" name="updatebtn"> Update </button></div>';
+
+				}
+				div.find("[name='saveinfodiv']").html(savestr);
+				div.find("[name='saveinfodiv']").find("[name='updatebtn']").click(function(){
+					var markgenesstr = div.find("[name='saveinfodiv']").find("[name='selectedMarks']").html().trim();
+					var negmarkgenesstr = div.find("[name='saveinfodiv']").find("[name='negselectedMarks']").html().trim();
+								
+					var clstrid;
+
+					if(dttype==="cid"){
+						clstrid = data1;
+					}
+					if(markgenesstr.length>0 && negmarkgenesstr.length>0){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"BOTHMARKS","clstrid":clstrid,"marks":markgenesstr,"negmarks":negmarkgenesstr},
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+								$("#dragablediv").hide();
+								var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+								var row = application.clusterTable.row(thistr);
+								var dt = row.data();
+								dt.negmarks = negmarkgenesstr.split(",");
+								dt.marks = markgenesstr.split(",");
+								row.data(dt).draw();
+								row.child( "" ).hide();
+							},
+							error:function(){
+								alert("save error")
+							}
+
+						});
+					}else if(markgenesstr.length>0 ){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"MARKS","clstrid":clstrid,"marks":markgenesstr, },
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+								$("#dragablediv").hide();
+								var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+								
+								var row = application.clusterTable.row(thistr);
+								var dt = row.data();
+								dt.marks = markgenesstr.split(",");
+								row.data(dt).draw();
+								row.child( "" ).hide();
+							},
+							error:function(){
+								alert("save error")
+							}
+
+
+
+						});
+					}else if( negmarkgenesstr.length>0){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"NEGMARKS","clstrid":clstrid,"marks":negmarkgenesstr},
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+								$("#dragablediv").hide();
+								var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+								var row = application.clusterTable.row(thistr);
+								var dt = row.data();
+								dt.negmarks = negmarkgenesstr.split(",");
+								row.data(dt).draw();
+								row.child( "" ).hide();
+							},
+							error:function(){
+								alert("save error")
+							}
+						});
+					}
+				});
+				div.find("[name='saveinfodiv']").find("[name='savebtn']").click(function(){
+
+					
+					$(bsModal.modalid).find(".modal-title").html("Cluster Editor");
+					$(bsModal.modalid).find(".modal-footer").html("");
+					var modalbody = $(bsModal.modalid).find(".modal-body");
+					modalbody.html("wait...");
+					$(bsModal.modalid).modal("show");
+					
+					$.ajax({
+						url:"/queryClstrType",
+						method:'post',
+						dataType:"JSON",
+						success:function(data){
+							
+							var clstrtypearray=data.data;
+							var optstr=""
+							for(var i in clstrtypearray){
+								optstr+="<option value='"+clstrtypearray[i]+"'>"+clstrtypearray[i]+"</option>";
+							}
+
+							var markgenesstr = div.find("[name='saveinfodiv']").find("[name='selectedMarks']").html().trim();
+							var negmarkgenesstr = div.find("[name='saveinfodiv']").find("[name='negselectedMarks']").html().trim();
+							//console.log(div.find("[name='saveinfodiv']").length)
+							//console.log(markgenesstr)
+							//console.log(negmarkgenesstr)
+							
+							modalbody.html("<div><span>Cluster Type:</span><select  name='clstrtypeinput'>"+optstr+"</select></div>");
+							modalbody.append("<div><span>Cluster Name :</span><div name='clstrnameinputdiv'></div></div>");
+							modalbody.append("<div><span>Positive Mark Genes:</span><textarea class='form-control' name='markgenestextarea'>"+markgenesstr+"</textarea></div>");
+							modalbody.append("<div><span>Negative Mark Genes:</span><textarea class='form-control' name='negmarkgenestextarea'>"+negmarkgenesstr+"</textarea></div>");
+							modalbody.append("<div><span>Comment:</span><textarea	type='text' class='form-control form-control-sm' name='clstrcommentinput'></textarea></div><div style='height:5px;'></div>");
+							modalbody.append("<button name='saveclstrbtn' class='btn btn-primary btn-sm'>Save</button>");
+							
+							modalbody.find("[name='clstrtypeinput']").selectize({
+									create:true
+							})
+							modalbody.find("[name='clstrtypeinput']").change(function(){
+
+								var clstrtype = modalbody.find("[name='clstrtypeinput']").val();
+								renderclusternameinput(clstrtype,modalbody.find("[name='clstrnameinputdiv']"));
+
+							});
+							modalbody.find("[name='clstrtypeinput']").trigger("change");
+
+							modalbody.find("[name='saveclstrbtn']").click(function(){
+								var name = modalbody.find("[name='clstrnameinput']").val();
+								var type = modalbody.find("[name='clstrtypeinput']").val();
+								var comment = modalbody.find("[name='clstrcommentinput']").val();
+								var markgenes = modalbody.find("[name='markgenestextarea']").val();
+								var negmarkgenes = modalbody.find("[name='negmarkgenestextarea']").val();
+								name = name.trim();
+
+								if(name !==""){
+									dosaveclstr(name,type,comment,markgenes,negmarkgenes,div.find("[name='saveinfodiv']"));
+								}else{
+									alert("input a name of cluster");
+								}
+											
+
+							})
+
+						},error:function(){
+							modalbody.html("get error from server");	
+						}
+
+
+
+					});
+					
+
+				});
+			},
+			renderContrastToTable : function(dt,datatype){
+
+				$(contrastMethod.displayid).find("[name='dragablepaneltitle']").html("Contrast To");
+				$(contrastMethod.displayid).show(300);
+
+				$(contrastMethod.displayid).find(".card-body").html("<div name='contrasttoopt'></div><div name='contrasttoresult'></div>");
+
+				var optdiv =$(contrastMethod.displayid).find("[name='contrasttoopt']");
+				var targetdiv = $(contrastMethod.displayid).find("[name='contrasttoresult']");
+
+				optstr="";
+				for(var i in application.clstrTypes){
+					optstr+="<option value='"+application.clstrTypes[i]+"'>"+application.clstrTypes[i]+"</option>";
+				}
+				optdiv.html("<span>Select Cluster Type & Cluster Name</span><br><select name='clstrtype1' class='form-control-sm' style='min-width:200px;'></select> &nbsp;&nbsp; <select name='clstrname1' class='form-control-sm' style='min-width:200px;'></select> &nbsp;&nbsp; <button class='btn btn-sm btn-primary' name='contrasttocontrast'>contrast</button>");
+
+				
+				optdiv.find("[name='clstrtype1']").html(optstr);
+
+				optdiv.find("[name='clstrtype1']").change(function(){
+					var clstrType = $(this).val();
+					optdiv.find("[name='clstrname1']").html("");
+					$.ajax({
+						url:"/getClstrsByTypeAndMapid2",
+						data:{"mapid":application.mapid,"clstrType":clstrType},
+						method:"post",
+						dataType:"JSON",
+						success:function(data){
+
+							var clstrdata = data.res;
+							var optstr="";
+
+							for(var i in clstrdata){
+
+								optstr+="<option value='"+clstrdata[i]["_id"]+"'>"+clstrdata[i]["clstrName"]+"</option>";
+							}
+					 
+					 		optdiv.find("[name='clstrname1']").html(optstr);
+						},
+						error:function(e){
+							//loading.loadingError("Error");
+						}
+					});
+				});
+				optdiv.find("[name='clstrtype1']").trigger("change");
+
+				optdiv.find("[name='contrasttocontrast']").click(function(){
+					var targetid = optdiv.find("[name='clstrname1']").val();
+					if(datatype==="id"){
+
+						contrastMethod.docontrastTo(dt,targetid,"clstrvsclstr",targetdiv)
+					}else{
+
+						contrastMethod.docontrastTo(dt,targetid,"cellvsclstr",targetdiv)
+					}
+				});
+			},
+			docontrastTo:function(clusterid,target,contrasttype,targetdiv){
+
+				var queryurl;
+				var querydata;
+				var dttype;
+				var neworupdate;
+				if(contrasttype==="cellvsclstr"){
+					var cellids= clusterid;
+					queryurl = "/contrast";
+					querydata = {"cells":cellids,"target":target,"sampleid":application.mapid};
+					dttype ="cells";
+					neworupdate="new";
+				}else if(contrasttype==="clstrvsclstr"){
+					queryurl = "/contrast2";
+					querydata = {"clstr":clusterid,"target":target,"sampleid":application.mapid};
+					dttype="cid";
+
+					neworupdate="update";
+				}
+				loading.loadingDivStart(targetdiv)
+				$.ajax({
+					url:queryurl,
+					data:querydata,
+					method:'post',
+					dataType:"JSON",
+					success:function(data){
+						var resultid = data.res;
+						contrastMethod.queryContrastResult(resultid,5000,0,targetdiv,clusterid,dttype,target,neworupdate);
+					},error:function(){
+						alert("error")
+					}
+				})
+
+			}
+
+		}
+
+		function getRandomColor() {
+			var letters = '0123456789ABCDEF';
+			var color = '#';
+			for (var i = 0; i < 6; i++) {
+				color += letters[Math.floor(Math.random() * 16)];
+			}
+			return color;
+		}
+
+		
+	</script>
+
+
+	<script type="text/javascript">
+
+		var barcodeSelector={ 
+			selectedPoints:[],
+			color:'#002383',
+			init:function(){
+				var g = scCanvas.svg.append("g")
+				var bcr = scCanvas.svg.node().getBoundingClientRect();
+				var dragarea = g
+				.append('rect')
+				.attr('width', bcr.width)
+				.attr('height', bcr.height)
+				.attr('fill', null)
+				.attr('opacity', 0);
+
+				var selectorPath= g.append("path").attr( "class","selectorPath")
+				.attr('fill', barcodeSelector.color)
+        		.attr('fill-opacity', 0.1)
+				.attr("stroke-width",1.6)
+				.attr('stroke', barcodeSelector.color);
+
+				var coordinates=[]
+
+				var drag = d3.drag()
+				.on('start', function(){
+
+					selectorPath.attr('d', null);
+					coordinates = [d3.mouse(this)];
+
+					barcodeSelector.start();
+					
+				})
+				.on('drag', function(){
+					var point = d3.mouse(this);
+					coordinates.push(point); 
+					selectorPath.attr('d', drawPolygonToPath(coordinates));
+					//lassoPath.attr('d', polygonToPath(lassoPolygon));
+					
+				})
+				.on('end', function(){
+					
+					selectorPath.attr('d', drawPolygonToPath(coordinates)+"Z");
+					barcodeSelector.end(coordinates);
+
+					if(barcodeSelector.selectedPoints.length==0){
+
+						selectorPath.attr('d',null);
+
+					}
+
+
+				});
+
+				dragarea.call(drag)
+
+			},
+			start:function(){
+
+				barcodeSelector.update([]);
+			},
+			end:function(coors){
+
+				var selectedPoints = application.data.filter(function(d){
+
+
+					var x = scCanvas.mainXscale(d.x)+scCanvas.marginLeft;
+					var y = scCanvas.mainYscale(d.y)+scCanvas.margin;
+
+					return d3.polygonContains(coors, [x, y]);
+				});
+				barcodeSelector.update(selectedPoints);
+			},
+
+			update:function(selectedPoints){
+				barcodeSelector.selectedPoints=selectedPoints;
+
+				barcodeSelector.showResult();
+			},
+			showResult:function(){
+
+				var targetdiv = $(application.infodiv_id).find("[name='sellectcelldiv']");
+				if(barcodeSelector.selectedPoints.length===0){
+					targetdiv.html("Select cells on the left to start cluster analysis.")
+					
+				}else{
+					
+					targetdiv.html("<span style='color:steelblue;'>"+barcodeSelector.selectedPoints.length +"</span> cells selected &nbsp;<span name='selectedcalculationsavediv'></span>");
+
+					targetdiv.find("[name='selectedcalculationsavediv']").html("<button class='btn btn-primary btn-sm' name='contrastbtn'> Contrast </button>&nbsp;<button class='btn btn-primary btn-sm' name='contrasttobtn'>ContrastTo</button>&nbsp;<span class='btn btn-info btn-sm' name='savetodb'><i class='far fa-save'></i></span>&nbsp;<button class='btn btn-secondary btn-sm' name='downloadbarcode'><i class=\"fas fa-file-excel\"></i></button>");
+
+					targetdiv.find("[name='contrastbtn']").click(function(){
+
+						//docontrast(cellids,"ALL");
+						var cellids = [];
+						for(var i in barcodeSelector.selectedPoints){
+
+							cellids.push(barcodeSelector.selectedPoints[i].order)
+
+						}
+						cellids = cellids.join(",");
+						contrastMethod.docontrast(cellids,"ALL");		
+
+					})
+
+					targetdiv.find("[name='contrasttobtn']").click(function(){
+
+						var cellids = [];
+						for(var i in barcodeSelector.selectedPoints){
+
+							cellids.push(barcodeSelector.selectedPoints[i].order)
+
+						}
+						cellids = cellids.join(",");
+
+						contrastMethod.renderContrastToTable(cellids,"cellstr");
+									
+					});
+
+
+					targetdiv.find("[name='downloadbarcode']").click(function(){
+						var cellids = [];
+						for(var i in barcodeSelector.selectedPoints){
+
+							cellids.push(barcodeSelector.selectedPoints[i]._id)
+
+						}
+						cellids = cellids.join("\n");
+
+						download(cellids,"barcodes.csv", "text/plain")
+					});
+					targetdiv.find("[name='savetodb']").click(function(){
+
+						$(bsModal.modalid).find(".modal-title").html("Cluster Editor");
+						$(bsModal.modalid).find(".modal-footer").html("");
+						var modalbody = $(bsModal.modalid).find(".modal-body");
+						modalbody.html("wait...");
+
+						$.ajax({
+
+							url:"/queryClstrType",
+							method:'post',
+							dataType:"JSON",
+							success:function(data){
+												//endLoading2();
+								var clstrtypearray=data.data;
+								var optstr=""
+								for(var i in clstrtypearray){
+									optstr+="<option value='"+clstrtypearray[i]+"'>"+clstrtypearray[i]+"</option>";
+								}
+								var markgenesstr = "";
+								var negmarkgenesstr = "";
+
+								modalbody.html("<div><span>Cluster Type:</span><select name='clstrtypeinput'>"+optstr+"</select></div>");
+								modalbody.append("<div><span>Cluster Name :</span><div name='clstrnameinputdiv'></div></div>");
+								modalbody.append("<div><span>Positive Mark Genes:</span><textarea class='form-control' name='markgenestextarea'>"+markgenesstr+"</textarea></div>");
+								modalbody.append("<div><span>Negative Mark Genes:</span><textarea class='form-control' name='negmarkgenestextarea'>"+negmarkgenesstr+"</textarea></div>");
+								modalbody.append("<div><span>Comment:</span><textarea	type='text' class='form-control form-control-sm' name='clstrcommentinput'></textarea></div><div style='height:5px;'></div>");
+								modalbody.append("<button name='saveclstrbtn' class='btn btn-primary btn-sm'>Save</button>");
+
+								modalbody.find("[name='clstrtypeinput']").selectize({
+									create:true
+								})
+								modalbody.find("[name='clstrtypeinput']").change(function(){
+
+									var clstrtype = modalbody.find("[name='clstrtypeinput']").val();
+									renderclusternameinput(clstrtype,modalbody.find("[name='clstrnameinputdiv']"));
+
+								});
+								modalbody.find("[name='clstrtypeinput']").trigger("change");
+
+								modalbody.find("[name='saveclstrbtn']").click(function(){
+									var name = modalbody.find("[name='clstrnameinput']").val();
+									var type = modalbody.find("[name='clstrtypeinput']").val();
+									var comment = modalbody.find("[name='clstrcommentinput']").val();
+									var markgenes = modalbody.find("[name='markgenestextarea']").val();
+									var negmarkgenes = modalbody.find("[name='negmarkgenestextarea']").val();
+									name = name.trim();
+
+
+									if(name !==""){
+										dosaveclstr(name,type,comment,markgenes,negmarkgenes,targetdiv.find("[name='saveinfodiv']"));
+									}else{
+										alert("input a name of cluster");
+									}
+								})
+							},error:function(){
+								modalbody.html("get error from server");	
+							}
+						});
+
+						$(bsModal.modalid).modal("show");
+
+					})//savebtn
+				}
+
+			},
+			drawPoints:function(){
+			}
+
+		}
+		function drawPolygonToPath(polygon) {
+			return ("M" + (polygon.map(function (d) { return d.join(','); }).join('L')));
+		}
+
+		var bsModal={
+			
+			modalid : "#defaultModal",
+			msgmodalid:"#msgModal",
+			showEditModal:function(clstrid,cname,thismarks,thisnegmarks,prechecked,color){
+				var modaldiv = $(bsModal.modalid);
+
+				modaldiv.modal("show");
+				modaldiv.find(".modal-title").html("Cluster Editor");
+				modaldiv.find(".modal-footer").html("");
+				var modalbody = modaldiv.find(".modal-body");
+
+				modalbody.html("<div>New cluster name:</div><div name='newnameinputdiv' class='input-group'><input name='newnameinput' class='form-control' type='text' placeholder='"+cname+"'><div class='input-group-append'><span class='input-group-text btn savebtn'>save</span></div></div>");
+
+				var iconstr="<i class='far fa-square'></i>";
+				var precheckedstr="F";
+				if(prechecked===true){
+					iconstr="<i class='far fa-check-square'></i>";
+					precheckedstr="T";
+				}
+
+				modalbody.append("<br><div><span style='color:steelblue;cursor:pointer;' isprecheck='"+precheckedstr+"'>"+iconstr+"</span>&nbsp;&nbsp;<span>Precheck</span></div>");
+
+				modalbody.append("<br><div><input type='text' name='colorchange' /></div>");
+
+				modalbody.append("<br><div><div>Positive Gene Marks:</div><div name='marksinputdiv' class='input-group'><input name='marksinput' class='form-control' type='text' value='"+thismarks.join(",")+"'></input><div class='input-group-append'><span class='input-group-text btn markssavebtn'>save</span></div></div></div>");
+
+				modalbody.append("<br><div><div>Negative Gene Marks:</div><div name='negmarksinputdiv' class='input-group'><input name='negmarksinput' class='form-control' type='text' value='"+thisnegmarks.join(",")+"'></input><div class='input-group-append'><span class='input-group-text btn negmarkssavebtn'>save</span></div></div></div>");
+
+				modalbody.find("[name='colorchange']").spectrum({
+					preferredFormat: "hex",
+					showPalette: true,
+					palette: [
+						["#D41159","#1A85FF","#D35FB7"],
+						["#FEFE62","#40B0A6","#E1BE6A"],
+						["#DC3220","#005AB5","#1AFF1A"],
+						["#E66100","#4B0092","#994F00"],
+						["#FFC20A","#5D3A9B","#AA4499"],
+						["#79739E","#B7B998","#7D0657"],
+					],
+					color: color,
+				});
+				modalbody.find("[name='colorchange']").change(function(){
+
+					var newcolor = $(this).val().toUpperCase();
+					if(newcolor.length===7){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"COLOR","clstrid":clstrid,"val":newcolor},
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+
+								var res = data.res;
+								var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+								if(res === "success"){
+									
+									var d = application.clusterTable.row(thistr).data();
+									d.color=newcolor;
+									application.clusterTable.row(thistr).child( "" ).hide();
+									application.clusterTable.row(thistr).data(d).draw();
+									modaldiv.modal("hide")
+									//bsModal.showMassageModal("success","#00F030");
+
+									submitClstrCheckStatus(false);
+
+								}else{
+
+									application.clusterTable.row(thistr).child( "" ).hide();
+									modaldiv.modal("hide")
+									bsModal.showMassageModal("error","#B00000");
+									
+								}
+								
+								
+							},
+							error:function(){
+								bsModal.showMassageModal("error","#B00000");
+							}
+						})
+					}
+
+				})
+
+				modalbody.find("[isprecheck]").click(function(){
+
+					var isprechecksetdiv=$(this);
+					var val = $(this).attr("isprecheck");
+					var newval=""
+					if(val ==="F"){
+						newval="T";
+					}else if(val==='T'){
+						newval='F';
+					}
+					if(newval !==""){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"prerender","clstrid":clstrid,"val":newval},
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+								isprechecksetdiv.attr("isprecheck",newval);
+								if(newval==="T"){
+									isprechecksetdiv.html("<i class='far fa-check-square'></i>");
+									var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+									var d = application.clusterTable.row(thistr).data();
+
+									d.prerender=true;
+									application.clusterTable.row(thistr).child( "" ).hide();
+									application.clusterTable.row(thistr).data(d);
+									//bsModal.showMassageModal("success","00F030");
+
+								}else if(newval==="F"){
+
+									isprechecksetdiv.html("<i class='far fa-square'></i>");
+									var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+									var d = application.clusterTable.row(thistr).data();
+									d.prerender=false;
+									application.clusterTable.row(thistr).child( "" ).hide();
+									application.clusterTable.row(thistr).data(d);
+									//bsModal.showMassageModal("success","00F030");
+
+								}
+							},
+							error:function(){
+								bsModal.showMassageModal("error","#B00000");
+							}
+						})
+					}
+				});
+				modalbody.find("[name='negmarksinputdiv']").find(".negmarkssavebtn").click(function(){
+					var marks= modalbody.find("[name='negmarksinputdiv']").find("[name='negmarksinput']").val();
+					marks = marks.trim();
+					if(marks.length>0 ){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"NEGMARKS","clstrid":clstrid,"marks":marks},
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+								modaldiv.modal("hide");
+								var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+								var row = application.clusterTable.row(thistr);
+								var dt = row.data();
+								dt.negmarks = marks.split(",");
+								row.child( "" ).hide();
+								row.data(dt).draw();
+								
+							},
+							error:function(){
+								alert("save error");
+							}
+						})
+					}
+
+
+				});
+
+				modalbody.find("[name='marksinputdiv']").find(".markssavebtn").click(function(){
+
+					var marks= modalbody.find("[name='marksinputdiv']").find("[name='marksinput']").val();
+					marks = marks.trim();
+					if(marks.length>0 ){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"MARKS","clstrid":clstrid,"marks":marks},
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+								$("#defaultModal").modal("hide");
+								var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+								var row = application.clusterTable.row(thistr);
+								var dt = row.data();
+								dt.marks = marks.split(",");
+								row.child( "" ).hide();
+								row.data(dt).draw();
+								
+							},
+							error:function(){
+								alert("save error")
+							}
+						})
+					}
+				});
+
+				modalbody.find("[name='newnameinputdiv']").find(".savebtn").click(function(){
+
+					var newname = modalbody.find("[name='newnameinputdiv']").find("[name='newnameinput']").val();
+					newname = newname.trim();
+					if(newname.length>0 && (newname !==cname)){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"NAME","clstrid":clstrid,"name":newname},
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+												
+								$(bsModal.modalid).modal("hide");
+								$("#"+scCanvas.svgid).find("[labelcid='"+clstrid+"']").text(newname);
+																		
+								var thistr = $("#clustersInfo").find("[name='clusterdetailtable']").find("[cid='"+clstrid+"']").closest("tr");
+								var row = application.clusterTable.row(thistr);
+								var dt = row.data();
+								dt.name = newname;
+								row.child( "" ).hide();
+								row.data(dt).draw();
+								
+							},
+							error:function(){
+								alert("save error")
+							}
+
+						}) 
+
+					}
+
+				});
+			},
+			showDeleteModal:function(){
+
+			},
+			showConfirmModal:function(){
+
+			},
+			showMassageModal:function(msg,color="#000000"){
+				var modaldiv = $(bsModal.msgmodalid);
+				var modalbody = modaldiv.find(".modal-body");
+				modalbody.html("<h4 class='text-center' style='color:"+color+";'>"+msg+"</h4>");
+
+				modaldiv.modal("show");
+
+
+				setTimeout(function() {
+					modaldiv.modal('hide');
+				}, 1300);
+			}
+
+		}
+		
+
+
+
+		function convertHex(hex,opacity){
+			hex = hex.replace('#','');
+			r = parseInt(hex.substring(0,2), 16);
+			g = parseInt(hex.substring(2,4), 16);
+			b = parseInt(hex.substring(4,6), 16);
+
+			result = 'rgba('+r+','+g+','+b+','+opacity+')';
+			return result;
+		}
+
+
+		function renderBarplot(div,data,issort){
+
+			var minv=Infinity;
+			var maxv =0;
+
+			if(issort){
+				for(var i=0;i<data.length;i++){
+					for(var j=i;j<data.length;j++){
+						var val1 = data[i]["median"];
+						var val2 = data[j]["median"];
+
+						if(val2 > val1){
+							temp =data[i];
+							data[i]=data[j];
+							data[j]=temp;
+						}
+					}
+				}
+			}
+
+			for(var i=0;i<data.length;i++){
+				var tempmax = data[i]["max"];
+				var tempmin = data[i]["min"];
+				if(tempmin<minv){
+					minv = tempmin;
+				}
+				if(tempmax>maxv){
+					maxv = tempmax;
+				}
+
+			}
+
+			var divwidth = $(div).width()-10;
+
+			var barmargin={ right:26,bottom:100,top:9, left:45};
+			var width =	Math.floor(divwidth - barmargin.left - barmargin.right);
+			var height = 220;
+			var barheight =height/2;
+			var gap=20;
+
+			$(div).html("");
+			var svg = d3.select(div).append("svg").attr("id",'barsvg')
+				.attr("width", width +barmargin.left +barmargin.right)
+				.attr("height", height +barmargin.top + barmargin.bottom+gap);
+
+			var maxmedian=0;
+			var labels=[];
+
+			for(var i in data){
+				var median = data[i]["median"];
+				if(median > maxmedian){
+					maxmedian = median;
+				}
+
+				labels.push(data[i]["name"]);
+			}
+
+			var xliner = d3.scaleLinear().domain([0, labels.length+1 ]).range([0, width]);
+
+			var yliner1 = d3.scaleLinear().domain([0, 1]).range([barheight,0]);
+			var yliner2 = d3.scaleLinear().domain([minv, maxv]).range([barheight,0]);
+
+			var xAxis = d3.axisBottom(xliner).tickFormat("").ticks(labels.length+1);
+			var yAxis1 = d3.axisLeft(yliner1);
+			var yAxis2 = d3.axisLeft(yliner2);
+
+			var barg = svg.append("g").attr("id","barg").attr("transform",	"translate("+barmargin.left+"," + (barmargin.top) + ")")
+			svg.append('g').attr("transform",	"translate("+barmargin.left+"," + (barmargin.top) + ")").call(yAxis1);
+			svg.append('g').attr("transform",	"translate("+barmargin.left+"," + ( barmargin.top+barheight+gap) + ")").call(yAxis2); 
+
+			svg.append('g').attr("transform", "translate("+barmargin.left+"," + (barheight+barmargin.top) + ")").call(xAxis);
+			svg.append('g').attr("transform", "translate("+barmargin.left+"," + ( barmargin.top+2*barheight+gap) + ")").call(xAxis);
+
+			for(var i=0;i<labels.length;i++){
+				barg.append("g").attr("class","xlabel2").attr("transform", "translate("+xliner(i+1)+"," + (2*barheight+gap) + ")")
+					.append("text").text(labels[i]).style("text-anchor", "end")
+					.attr("dx", "-.8em").attr("dy", ".15em")
+					.style("font-size",13)
+					.attr("transform", "rotate(-90)");
+			}
+
+			var plot1y = barheight;
+			var plot2y = barheight+gap;
+			var barwidth = width/data.length/2;
+			var boxwidth = barwidth;
+			var hf_boxwidth = barwidth/2
+			if(barwidth> 33){
+				barwidth =33;
+			}
+			for(var i=0;i<data.length;i++){
+
+				var color = data[i]["color"];
+				var percval =data[i]["perc"];
+				var barh1 = yliner1(percval);
+				barh1 = barheight-barh1;
+
+				var y1 = plot1y-barh1
+				var x = xliner(i+1)-(barwidth/2);
+
+				var boxx1 = xliner(i+1)-(hf_boxwidth);
+				var boxx2 = xliner(i+1)+(hf_boxwidth);
+
+
+				barg.append("rect").attr("x",x).attr("y",y1)
+					.attr("width",barwidth).attr("height",barh1)
+					.style("fill",color)
+					.style("cursor","pointer")
+					.attr("median",Math.round( Number(data[i]["median"])*100 )/100 )
+					.attr("mean",Math.round( Number(data[i]["mean"])*100 )/100 )
+					.attr("perc",Math.round( percval*100 )/100 )
+					.on("mouseover", function(){
+						var pagex = d3.event.pageX;
+						var pagey = d3.event.pageY;
+						var perc = d3.select(this).attr("perc");
+						var mean = d3.select(this).attr("mean");
+						var median = d3.select(this).attr("median");
+						var form="<div>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Positive cells perc : "+perc+"</span> &nbsp;&nbsp;&nbsp;<br>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Mean : "+mean+"</span> &nbsp;&nbsp;&nbsp;<br>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Median : "+median+"</span> &nbsp;&nbsp;&nbsp; ";
+						form+="</div>";
+						d3.select("#tooltip").style("opacity",.9)
+											.style("left",(pagex+15)+"px")
+											.style("top",(pagey-20)+"px")
+											.html(form);
+
+						$("#tooltip").show();
+
+						d3.select(this).style("fill-opacity",0.5);
+
+
+					})
+					.on("mouseout",	function(){
+
+						$("#tooltip").hide();
+						d3.select(this).style("fill-opacity",1);
+					});
+
+				
+				var min= yliner2(data[i]["min"]);
+				var max = yliner2(data[i]["max"]);
+				var median = yliner2(data[i]["median"]);
+				var q1 = yliner2(data[i]["1q"]);
+				var q3 = yliner2(data[i]["3q"]);
+				
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1).attr("x2",boxx2)
+					.attr("y1",plot2y+median).attr("y2",plot2y+median)
+					.style("stroke-width",1);
+			
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1).attr("x2",boxx2)
+					.attr("y1",plot2y+max).attr("y2",plot2y+max)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1).attr("x2",boxx2)
+					.attr("y1",plot2y+min).attr("y2",plot2y+min)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1).attr("x2",boxx2)
+					.attr("y1",plot2y+q1).attr("y2",plot2y+q1)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1).attr("x2",boxx2)
+					.attr("y1",plot2y+q3).attr("y2",plot2y+q3)
+					.style("stroke-width",1);
+
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1).attr("x2",boxx1)
+					.attr("y1",plot2y+q1).attr("y2",plot2y+q3)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx2).attr("x2",boxx2)
+					.attr("y1",plot2y+q1).attr("y2",plot2y+q3)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",xliner(i+1)).attr("x2",xliner(i+1))
+					.attr("y1",plot2y+max).attr("y2",plot2y+q3)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",xliner(i+1)).attr("x2",xliner(i+1))
+					.attr("y1",plot2y+q1).attr("y2",plot2y+min)
+					.style("stroke-width",1);
+
+
+				barg.append("rect")
+					.style("fill",color)
+					.style("fill-opacity",0.5)
+					.style("cursor","pointer")
+					.attr("x",boxx1)
+					.attr("y",plot2y+q3)
+					.attr("height",	 q1-q3)
+					.attr("width",2*hf_boxwidth)
+					.attr("median",Math.round( Number(data[i]["median"])*100 )/100 )
+					.attr("mean",Math.round( Number(data[i]["mean"])*100 )/100 )
+					.attr("perc",Math.round( percval*100 )/100 )
+					.on("mouseover", function(){
+						var pagex = d3.event.pageX;
+						var pagey = d3.event.pageY;
+
+						var perc = d3.select(this).attr("perc");
+						var mean = d3.select(this).attr("mean");
+						var median = d3.select(this).attr("median");
+						var form="<div>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Positive cells perc : "+perc+"</span> &nbsp;&nbsp;&nbsp;<br>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Mean : "+mean+"</span> &nbsp;&nbsp;&nbsp;<br>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Median : "+median+"</span> &nbsp;&nbsp;&nbsp; ";
+						form+="</div>";
+						d3.select("#tooltip").style("opacity",.9)
+							.style("left",(pagex+15)+"px")
+							.style("top",(pagey-20)+"px")
+							.html(form);
+
+						$("#tooltip").show();
+
+						d3.select(this).style("fill-opacity",0.9);
+
+
+					})
+					.on("mouseout",	function(){
+
+						$("#tooltip").hide();
+						d3.select(this).style("fill-opacity",0.5);
+					});
+			}
+			var label1= svg.append("g").attr("class","boxbar").attr("transform", "translate( "+(barmargin.left-35)+","+(barmargin.top+gap +barheight+barheight/2)+" ) rotate(-90)")
+			.append("text").text("Normalized counts").style("font-size","13")
+				.attr("text-anchor", "middle");
+				//.attr("x",barmargin.left-30).attr("y",barmargin.top+barheight/2);//;
+			var label2= svg.append("g").attr("class","percbar").attr("transform", "translate( "+(barmargin.left-35)+" , "+(barmargin.top+barheight/2)+" ) rotate(-90)")
+				.append("text").text("Positive cells").attr("text-anchor", "middle").style("font-size","13");
+			//.attr("x",barmargin.left-30).attr("y",barmargin.top+barmargin.bottom+barheight+barheight/2); 
+
+		}
+
+
+		function renderBarplot2(div,data,geneName,issort){
+			var minv=Infinity;
+			var maxv =0;
+			if(issort){
+				for(var i=0;i<data.length;i++){
+					for(var j=i;j<data.length;j++){
+
+						var val1 = data[i]["median"];
+						var val2 = data[j]["median"];
+
+						if(val2 > val1){
+							temp =	data[i];
+							data[i]=data[j];
+							data[j]=temp;
+						}
+					}
+				}
+			}
+			for(var i=0;i<data.length;i++){
+
+				var tempmax = data[i]["max"];
+				var tempmin = data[i]["min"];
+
+				if(tempmin<minv){
+					minv = tempmin;
+				}
+				if(tempmax>maxv){
+					maxv = tempmax;
+				}
+			}
+
+
+			var divwidth = $(div).width();
+			var barmargin={ right:13,bottom:100,top:9, left:50};
+			var gap =20;
+			var width =	Math.ceil(divwidth - 2*barmargin.left - 2*barmargin.right-gap);
+			var height = 150;
+			var barheight =height;
+			
+			var barwidth = (width)/2;
+			 
+
+			$(div).html("<h6>"+geneName+"</h6>");
+			var svg = d3.select(div).append("svg").attr("id",'barsvg')
+				.attr("width", width +	2*barmargin.left +	2*barmargin.right+gap)
+				.attr("height", height +	barmargin.top + barmargin.bottom);
+
+			var maxmedian=0;
+			var labels=[];
+
+			for(var i in data){
+
+				median = data[i]["median"];
+				if(median > maxmedian){
+
+					maxmedian = median;
+				}
+
+				labels.push(data[i]["name"])
+			}
+
+			var xliner = d3.scaleLinear()
+				.domain([0, labels.length+1 ])
+				.range([0, barwidth]);
+
+
+			var yliner1 = d3.scaleLinear()
+				.domain([0, 1])
+				.range([barheight,0]);
+
+
+
+			var yliner2 = d3.scaleLinear()
+				.domain([minv, maxv])
+				.range([barheight,0]);
+
+			var xAxis = d3.axisBottom(xliner).tickFormat("").ticks(labels.length+1);
+			var yAxis1 = d3.axisLeft(yliner1);
+			var yAxis2 = d3.axisLeft(yliner2);
+
+			var barg = svg.append("g").attr("id","barg").attr("transform",	"translate("+barmargin.left+"," + (barmargin.top) + ")");
+			svg.append('g').attr("transform",	"translate("+barmargin.left+"," +	barmargin.top + ")").call(yAxis1);
+			svg.append('g').attr("transform",	"translate("+(2*barmargin.left+barwidth+gap)+"," +barmargin.top + ")").call(yAxis2); 
+
+			svg.append('g').attr("transform", "translate("+barmargin.left+"," + (barheight+barmargin.top) + ")").call(xAxis);
+			svg.append('g').attr("transform", "translate("+(2*barmargin.left+barwidth+gap)+"," + ( barmargin.top+barheight) + ")").call(xAxis);
+
+			for(var i=0;i<labels.length;i++){
+				
+
+				barg.append("g").attr("class","xlabel2").attr("transform", "translate("+xliner(i+1)+"," + (barheight) + ")")
+					.append("text").text(labels[i]).style("text-anchor", "end")
+					.attr("dx", "-.8em")
+					.attr("dy", ".15em")
+					.style("font-size",13)
+					.attr("transform", "rotate(-90)");
+
+
+				barg.append("g").attr("class","xlabel2").attr("transform", "translate("+(xliner(i+1)+barmargin.left+barwidth+gap)+"," + ( barheight ) + ")")
+					.append("text").text(labels[i]).style("text-anchor", "end")
+					.attr("dx", "-.8em")
+					.attr("dy", ".15em")
+					.style("font-size",13)
+					.attr("transform", "rotate(-90)");
+			}
+
+
+			var plot1y = barheight;
+			var plot2y = 0 ;
+			var barwidthx = barwidth/data.length/2;
+			var boxwidthx = barwidthx;
+			var hf_boxwidth = barwidthx/2
+			if(barwidthx> 35){
+				barwidthx =35;
+			}
+			for(var i=0;i<data.length;i++){
+
+				var color = data[i]["color"];
+				var percval =data[i]["perc"];
+				var barh1 = yliner1(percval);
+				barh1 = barheight-barh1;
+
+				var y1 = plot1y-barh1
+				var x1 = xliner(i+1)-(barwidthx/2);
+
+				var boxx1 = xliner(i+1)-(hf_boxwidth)+gap+barwidth+barmargin.left;
+				var boxx2 = xliner(i+1)+(hf_boxwidth)+gap+barwidth+barmargin.left;
+
+				barg.append("rect").attr("x",x1).attr("y",y1).attr("width",barwidthx)
+				.attr("height",barh1).style("fill",color)
+				.style("cursor","pointer")
+					.attr("median",Math.round( Number(data[i]["median"])*100 )/100 )
+					.attr("mean",Math.round( Number(data[i]["mean"])*100 )/100 )
+					.attr("perc",Math.round( percval*100 )/100 )
+					.on("mouseover", function(){
+						var pagex = d3.event.pageX;
+						var pagey = d3.event.pageY;
+
+						var perc = d3.select(this).attr("perc");
+						var mean = d3.select(this).attr("mean");
+						var median = d3.select(this).attr("median");
+						var form="<div>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Positive cells perc : "+perc+"</span> &nbsp;&nbsp;&nbsp;<br>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Mean : "+mean+"</span> &nbsp;&nbsp;&nbsp;<br>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Median : "+median+"</span> &nbsp;&nbsp;&nbsp; ";
+						form+="</div>";
+						d3.select("#tooltip").style("opacity",.9)
+							.style("left",(pagex+15)+"px")
+							.style("top",(pagey-20)+"px")
+							.html(form);
+
+						$("#tooltip").show();
+
+						d3.select(this).style("fill-opacity",0.5);
+
+
+					})
+					.on("mouseout",	function(){
+						$("#tooltip").hide();
+						d3.select(this).style("fill-opacity",1);
+					});
+
+				var min= yliner2(data[i]["min"]);
+				var max = yliner2(data[i]["max"]);
+				var median = yliner2(data[i]["median"]);
+				var q1 = yliner2(data[i]["1q"]);
+				var q3 = yliner2(data[i]["3q"]);
+				//alert(medianval)
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1)
+					.attr("x2",boxx2)
+					.attr("y1",plot2y+median)
+					.attr("y2",plot2y+median)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1)
+					.attr("x2",boxx2)
+					.attr("y1",plot2y+max)
+					.attr("y2",plot2y+max)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1)
+					.attr("x2",boxx2)
+					.attr("y1",plot2y+min)
+					.attr("y2",plot2y+min)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1)
+					.attr("x2",boxx2)
+					.attr("y1",plot2y+q1)
+					.attr("y2",plot2y+q1)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1)
+					.attr("x2",boxx2)
+					.attr("y1",plot2y+q3)
+					.attr("y2",plot2y+q3)
+					.style("stroke-width",1);
+
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx1)
+					.attr("x2",boxx1)
+					.attr("y1",plot2y+q1)
+					.attr("y2",plot2y+q3)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1",boxx2)
+					.attr("x2",boxx2)
+					.attr("y1",plot2y+q1)
+					.attr("y2",plot2y+q3)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1", (xliner(i+1)+gap+barwidth+barmargin.left)	)
+					.attr("x2", (xliner(i+1)+gap+barwidth+barmargin.left) )
+					.attr("y1",plot2y+max)
+					.attr("y2",plot2y+q3)
+					.style("stroke-width",1);
+
+				barg.append("line")
+					.style("stroke",color)
+					.attr("role","box")
+					.attr("x1", (xliner(i+1)+gap+barwidth+barmargin.left) )
+					.attr("x2", (xliner(i+1)+gap+barwidth+barmargin.left) )
+					.attr("y1",plot2y+q1)
+					.attr("y2",plot2y+min)
+					.style("stroke-width",1);
+
+				barg.append("rect")
+					.style("fill",color)
+					.style("fill-opacity",0.5)
+					.style("cursor","pointer")
+					.attr("x",boxx1)
+					.attr("y",plot2y+q3)
+					.attr("height",	 q1-q3)
+					.attr("width",2*hf_boxwidth)
+					.attr("median",Math.round( Number(data[i]["median"])*100 )/100 )
+					.attr("mean",Math.round( Number(data[i]["mean"])*100 )/100 )
+					.attr("perc",Math.round( percval*100 )/100 )
+					.on("mouseover", function(){
+						var pagex = d3.event.pageX;
+						var pagey = d3.event.pageY;
+
+						var perc = d3.select(this).attr("perc");
+						var mean = d3.select(this).attr("mean");
+						var median = d3.select(this).attr("median");
+						var form="<div>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Positive cells perc : "+perc+"</span> &nbsp;&nbsp;&nbsp;<br>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Mean : "+mean+"</span> &nbsp;&nbsp;&nbsp;<br>";
+							form+="&nbsp;&nbsp;&nbsp; <span>Median : "+median+"</span> &nbsp;&nbsp;&nbsp; ";
+						form+="</div>";
+						d3.select("#tooltip").style("opacity",.9)
+							.style("left",(pagex+15)+"px")
+							.style("top",(pagey-20)+"px")
+							.html(form);
+
+						$("#tooltip").show();
+
+						d3.select(this).style("fill-opacity",0.9);
+
+					})
+					.on("mouseout",	function(){
+
+						$("#tooltip").hide();
+						d3.select(this).style("fill-opacity",0.5);
+					});
+
+
+
+			}//for
+
+			var label1= svg.append("g").attr("class","boxbar").attr("transform", "translate( "+(2*barmargin.left+gap+barwidth-40)+","+(barmargin.top+barheight/2)+" ) rotate(-90)")
+				.append("text").text("Normalized counts").style("font-size","13")
+				.attr("text-anchor", "middle");
+
+			
+				//.attr("x",barmargin.left-30).attr("y",barmargin.top+barheight/2);//;
+			var label2= svg.append("g").attr("class","percbar").attr("transform", "translate( "+(barmargin.left-35)+" , "+(barmargin.top+barheight/2)+" ) rotate(-90)")
+				.append("text").text("Positive cells").attr("text-anchor", "middle").style("font-size","13");
+		}//renderbarplot2
+
+
+		function renderGeneSearchAllclstrBarPlot(clstrType,gene){
+			var plotdiv_id = "#barsvgdiv" ;
+			loading.loadingDivStart($(plotdiv_id))
+			//$(plotdiv_id).html("loading")
+			$.ajax({
+
+				url:"/getGeneSearchPlotDataByclstrType",
+				data:{"gene":gene,"mapid":application.mapid,"clstrType":clstrType},
+				method:'post',
+				dataType:"JSON",
+				success:function(data){
+					
+					var data = data.data;
+					var clstrArr = new Array(application.data.length);
+					
+					for(var i=0;i < data.length;i++){
+						
+						for(var j in data[i].cells){
+
+							clstrArr[data[i].cells[j]]=i;
+						}
+						delete data[i].cells;
+					}
+					renderBarplot(plotdiv_id,data,false);
+					renderScatterPlotNodes(null,true);
+
+				},error:function(){
+
+					loading.loadingDivError(div);
+
+				}
+			})
+
+		}
+
+		function updateGeneSearchFilterPlot(data,plotdiv,filterClstrArr){
+
+			plotdiv.html("");
+
+			if(data.length>0){
+				renderBarplot("#"+plotdiv.attr("id"),data,false);
+				barcodesMap.redscale = d3.scaleLinear().domain([0,barcodesMap.maxexpr]).range(["#ff8080", "#800000"]);
+				renderScatterPlotNodes(filterClstrArr,true);
+			}else{
+
+				renderScatterPlotNodes(filterClstrArr,true);
+			}
+
+			
+
+
+		}
+
+
+
+		function renderFilterClustersCheckBox2(div,clstrType){
+			div.html("<div><i class='fas fa-circle-notch fa-spin'></i></div>");
+			$.ajax({
+				url:"/getClstrNameByclstrType",
+				data:{"mapid":application.mapid,"clstrType":clstrType},
+				method:'post',
+				dataType:"JSON",
+				success:function(data){
+					var data = data.data;
+					div.html("");
+					for(var i in data){
+						div.append("<span name='genesearchResFilter' ischeck='T'><span class='checkicon'><i class='far fa-check-square'></i></span>&nbsp;&nbsp;<span name='clstrname'>"+i +"</span></span><br>");
+						
+					}
+					application.clusterFilter={};
+					application.clusterFilter["data"]=data;
+					application.clusterFilter["clstrType"]=clstrType;
+
+					div.find("[name='genesearchResFilter']").click(function(){    
+
+						if($(this).attr("ischeck")==="T"){
+							$(this).attr("ischeck","F");
+							
+							$(this).find(".checkicon").html("<i class='far fa-square'></i>");
+						}else{
+							$(this).attr("ischeck","T");
+							$(this).find(".checkicon").html("<i class='far fa-check-square'></i>");
+						}
+
+						collectclusters(div.find("[ischeck='T'][name='genesearchResFilter']"));
+
+						
+					});
+					collectclusters(div.find("[ischeck='T'][name='genesearchResFilter']"));
+
+				},
+				error:function(){
+
+					loading.loadingDivError(div);
+
+				}
+
+			})
+
+
+		}
+
+		function collectclusters(divs){
+
+			application.clusterFilter["selected"]={};
+			
+			divs.each(function(){
+
+				var clstrName = $(this).find("[name='clstrname']").text();
+				var clstrids = application.clusterFilter["data"][clstrName];
+				for(var i in clstrids){
+					application.clusterFilter["selected"][clstrids[i]]=null;
+				}
+				
+			});
+			renderScatterPlotNodes()
+		}
+
+
+		function renderFilterClustersCheckbox(div,clstrType,gene){
+			
+			var plotdiv = $("#barsvgdiv");
+			loading.loadingDivStart(plotdiv)
+
+			$.ajax({
+
+				url:"/getGeneSearchPlotDataByclstrType",
+				data:{"gene":gene,"mapid":application.mapid,"clstrType":clstrType},
+				method:'post',
+				dataType:"JSON",
+				success:function(data){
+					
+					var data = data.data;
+
+					var clstrArr = new Array(application.data.length);
+
+					//div.html("<span class='clearallbtn' style='cursor:pointer;color:steelblue;'><i class='far fa-square'></i>&nbsp;&nbsp;Clear</span><br>")
+					div.html("");
+					for(var i=0;i < data.length;i++){
+						div.append("<span name='genesearchResFilter' ischeck='T' order='"+i+"'><span class='checkicon'><i class='far fa-check-square'></i></span>&nbsp;&nbsp;<span name='clstrname'>"+data[i].name+"</span></span><br>");
+						for(var j in data[i].cells){
+
+							clstrArr[data[i].cells[j]]=i;
+						}
+						delete data[i].cells;
+					}
+
+					
+					div.find("[name='genesearchResFilter']").click(function(){    
+
+						if($(this).attr("ischeck")==="T"){
+							$(this).attr("ischeck","F");
+							
+							$(this).find(".checkicon").html("<i class='far fa-square'></i>");
+						}else{
+							$(this).attr("ischeck","T");
+							$(this).find(".checkicon").html("<i class='far fa-check-square'></i>");
+						}
+
+						var checkedclstrs={};
+						div.find("[ischeck='T']").each(function(){
+							checkedclstrs[$(this).attr("order")]=null;
+						});
+						
+						var filteredplotdata =[];
+						for(var i in checkedclstrs ){
+							filteredplotdata.push(data[i]);
+						}
+						
+
+						var filteredClstrArr=[];
+						for(var i in clstrArr){
+							if(clstrArr[i] in checkedclstrs){
+
+								filteredClstrArr[i]=clstrArr[i]
+							}else{
+								filteredClstrArr[i] = undefined;
+
+							}
+
+						}
+						updateGeneSearchFilterPlot(filteredplotdata,plotdiv,filteredClstrArr);
+					});
+
+					updateGeneSearchFilterPlot(data,plotdiv,clstrArr);
+
+				},error:function(){
+
+					loading.loadingDivError(div);
+
+				}
+			})
+		}
+
+		function renderHeatmapPlots(div){
+			div.html("<div name='barsvgselection'></div><div id='barsvgdiv' style='min-height:340px;'></div>");
+			var selectstr="<div><span><i hpvalsselect='zscore' isselected='F' style='color:steelblue;cursor:pointer;'><i class='far fa-circle'></i></i>&nbsp;&nbsp;Zscore</span>&nbsp;&nbsp;&nbsp;&nbsp;<span><i style='color:steelblue;cursor:pointer;' hpvalsselect='ncount' isselected='T'><i class='far fa-check-circle'></i></i>&nbsp;&nbsp;Normalized Counts</span></div><div style='height:6px;'></div><select name='plotclstrselection' class='form-control form-control-sm'>";
+			if( application.clstrTypes.includes("cellType")){
+				selectstr+="<option value='cellType'>cellType</option>";
+
+			}
+			for(var i in application.clstrTypes){
+				if(application.clstrTypes[i]!=="cellType"){
+					selectstr+="<option value='"+application.clstrTypes[i]+"'>"+application.clstrTypes[i]+"</option>";
+				}
+
+			}
+
+			selectstr+="</select>";
+
+			div.find("[name='barsvgselection']").html("<div>"+selectstr+" </div><div class='list-group' name='clstrselectforhp'></div>");
+
+			div.find("[hpvalsselect]").click(function(){
+
+				var thisdiv = $(this);
+
+				$("[hpvalsselect]").attr("isselected",'F').html("<i class='far fa-circle'></i>");
+
+				thisdiv.html("<i class='far fa-check-circle'></i>");
+
+				thisdiv.attr("isselected","T");
+
+
+
+
+				renderHeatmap();
+
+			})
+
+
+			div.find("[name='barsvgselection']").find("[name='plotclstrselection']").on("change",function(){
+
+				div.find("[name='barsvgselection']").find("[name='clstrselectforhp']").html("");
+
+				var value = $(this).val();
+				$.ajax({
+					url:"/getClstrsByTypeAndMapid",
+					data:{"mapid":application.mapid,"clstrType":value},
+					method:"post",
+					dataType:"JSON",
+					success:function(res){
+
+						var clstrNames = res.res;
+
+						var cellorderJson={};
+						var selectbarcodeorder={};
+						
+						if(barcodeSelector.selectedPoints.length>0){
+							
+							for(var i=0 ;i<barcodeSelector.selectedPoints.length;i++){
+								cellorderJson[barcodeSelector.selectedPoints[i]["order"]]=false;
+								selectbarcodeorder[barcodeSelector.selectedPoints[i]["order"]]=i;
+							}
+						}else{
+							for(var i in application.data){
+								cellorderJson[application.data[i]["order"]]=false;
+								selectbarcodeorder[application.data[i]["order"]]=i;
+							}
+
+						}
+
+						
+						heatmap["clstr"]={};
+
+						for(var i in clstrNames){
+
+							var clstrName=clstrNames[i]["clstrName"];
+							var color = clstrNames[i]["color"];
+							var cells = clstrNames[i]["cells"];
+
+
+							var cells2=[];
+							for(var j in cells){
+								if(cells[j] in cellorderJson){
+									if(cellorderJson[cells[j]]===false){
+										cells2.push( selectbarcodeorder[ cells[j]  ] );
+										cellorderJson[cells[j]]=true
+									}
+									
+								}
+							}
+
+							if(cells2.length>0){
+								heatmap["clstr"][clstrName]={"color":color,"cellpos":cells2,"ischeck":true}
+								
+									
+							}
+						}
+
+						var temp=[];
+						for(var i in cellorderJson){
+							
+							if(cellorderJson[i]===false){
+
+								temp.push(selectbarcodeorder[i] )
+							}
+						}
+						if(temp.length>0){
+							heatmap["clstr"]["TBD"]={"color":"#C3C3C3","cellpos":temp,"ischeck":true}
+							temp=null;
+						}
+						
+
+
+						for(var clstrname in heatmap["clstr"]){
+
+							div.find("[name='barsvgselection']").find("[name='clstrselectforhp']").append("<a href='#' class='list-group-item list-group-item-action' style='padding: 3px 10px;' clstrname='"+clstrname+"'><i name='hpclstrcheck'><i class='far fa-check-square'></i></i>&nbsp;&nbsp;&nbsp;<span style='color:"+heatmap["clstr"][clstrname].color+";'>"+clstrname+"</span></a>");
+						}
+
+						div.find("[name='barsvgselection']").find("[name='clstrselectforhp']").find("a").click(function(){
+
+							var clstrname= $(this).attr("clstrname");
+							if(heatmap["clstr"][clstrname]["ischeck"]){
+								heatmap["clstr"][clstrname]["ischeck"]=false;
+
+								$(this).find("[name='hpclstrcheck']").html("<i class='far fa-square'></i>");
+							}else{
+								heatmap["clstr"][clstrname]["ischeck"]=true;
+								$(this).find("[name='hpclstrcheck']").html("<i class='far fa-check-square'></i>");
+							}
+
+
+							
+							renderHeatmap();
+
+						});
+
+						renderHeatmap();
+
+
+
+						
+					},error:function(){
+
+
+					}
+
+				})
+				//renderHeatmap(value);
+			});
+
+			div.find("[name='barsvgselection']").find("[name='plotclstrselection']").trigger("change");
+
+
+		}
+
+		function renderGenesearchPlot(div,gene){
+			div.html("<div name='barsvgselection'></div><div id='barsvgdiv' style='min-height:340px;'></div>");
+			var selectstr="<select name='plotclstrselection' class='form-control-sm'>";
+			if( application.clstrTypes.includes("cellType")){
+				selectstr+="<option value='cellType'>cellType</option>";
+
+			}
+
+			for(var i in application.clstrTypes){
+				if(application.clstrTypes[i]!=="cellType"){
+					selectstr+="<option value='"+application.clstrTypes[i]+"'>"+application.clstrTypes[i]+"</option>";
+				}
+
+			}
+
+			selectstr+="</select>";
+
+			selectstr+="&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+			selectstr+="<div class='' style='position: relative;display: inline-block; font-size:14px;'>";
+				selectstr+="<span isfilter='F' style='color:steelblue;cursor:pointer;'><i class='far fa-circle'></i></span><span name='filter-toggle'> &nbsp;Filter</span>";
+				selectstr+= "<div class='mydropdown-content'>";
+					
+				selectstr+= "<div><i class='fas fa-circle-notch fa-spin'></i></div>";
+
+				selectstr+= "</div>"
+			selectstr+="</div>";
+
+			div.find("[name='barsvgselection']").html("<h6>&nbsp;&nbsp;"+gene+" &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; "+selectstr+" </h6>");
+
+			div.find("[name='barsvgselection']").find("[isfilter]").click(function(){
+				if($(this).attr("isfilter")==="F"){
+					$(this).attr("isfilter","T");
+					$(this).parent().addClass("mydropdown");
+					$(this).html("<i class='far fa-dot-circle'>");
+					div.find("[name='filter-toggle']").html("&nbsp;Filter <i class='fas fa-caret-down'></i>");
+
+					div.find("[name='barsvgselection']").find("[name='plotclstrselection']").trigger("change");
+				}else{
+					$(this).attr("isfilter","F");
+					$(this).parent().removeClass("mydropdown");
+					$(this).html("<i class='far fa-circle'>");
+					div.find("[name='filter-toggle']").html("&nbsp;Filter ");
+
+					renderGeneSearchAllclstrBarPlot(div.find("[name='barsvgselection']").find("[name='plotclstrselection']").val(),gene);
+				}
+
+			})
+			renderGeneSearchAllclstrBarPlot(div.find("[name='barsvgselection']").find("[name='plotclstrselection']").val(),gene);
+			
+
+			div.find("[name='barsvgselection']").find("[name='plotclstrselection']").on("change",function(){
+				var value = $(this).val();
+				 
+				renderFilterClustersCheckbox(div.find("[name='barsvgselection']").find(".mydropdown-content"),value,gene);
+			});
+
+
+			
+
+			//renderFilterClustersCheckbox(div.find("[name='barsvgselection']").find(".mydropdown-content"),div.find("[name='barsvgselection']").find("[name='plotclstrselection']").val(),gene);
+
+		}
+
+
+		function initPlotArea(){
+
+			var data = application.data;
+			var div_id = application.maindiv_id;
+
+			$(div_id).css("background",scCanvas.defaultBG).html("");
+
+			var labelgap=30;
+			var width = $(div_id).width();
+			var height = $(div_id).height()-labelgap;
+
+			var margin = scCanvas.margin;
+			var size = Math.floor(d3.min([width,height]));
+			size = size- 2*margin ;
+
+			scCanvas.marginLeft = Math.floor((width-size)/2);
+						
+			d3.select(div_id).append('canvas').attr("id",scCanvas.id).style("position", "absolute");
+
+			scCanvas.canvas = document.getElementById(scCanvas.id);
+			//scCanvas.canvas.width = width;
+			//scCanvas.canvas.height = height+labelgap;
+			scCanvas.canvas.width = width;
+			scCanvas.canvas.height = height+labelgap;
+			
+			var xrange=[0,0];
+			var yrange=[0,0];
+
+
+			for(var i in data){
+				let tempx = data[i].x;
+				let tempy = data[i].y;
+						
+				if(tempx < xrange[0]){
+					xrange[0]=Math.floor(tempx);
+				}else if(tempx > xrange[1]){
+					xrange[1]=Math.ceil(tempx);
+				}
+
+				if(tempy < yrange[0]){
+					yrange[0]=Math.floor(tempy);
+				}else if(tempy > yrange[1]){
+					yrange[1]=Math.ceil(tempy);
+				}
+
+			}
+
+			scCanvas.mainXscale = d3.scaleLinear()
+			.domain(xrange)
+			.range([0, size]);
+
+			scCanvas.mainYscale = d3.scaleLinear()
+			.domain(yrange)
+			.range([size, 0]);
+
+			
+			scCanvas.svg =d3.select(div_id).append('svg').attr("id",scCanvas.svgid).attr("width",scCanvas.canvas.width).attr("height",scCanvas.canvas.height).style("position", "absolute").style("z-index",1000);
+			scCanvas.svg.append("g").style("transform", "translate(" + (scCanvas.marginLeft+size/2)+"px" + "," + (margin+size+labelgap) + "px" + ")")
+			.append("text").text(application.mapName).attr("class","mapname").attr("text-anchor","middle");
+
+
+			barcodeSelector.init();
+
+			//init heatmap
+
+			d3.select(application.maindiv_id).append('canvas').attr("id",scCanvas.heatmapid).style("position", "absolute");
+			$("#"+scCanvas.heatmapid).hide();
+			
+
+		}
+
+		function initClstrTablesActions(div){
+
+			div.on("click","[isexpand='T']",function(){
+				var thisdiv = $(this);
+				var tr = $(this).parent().closest('tr');
+				var row = application.clusterTable.row( tr );
+				row.child( "" ).hide();
+				thisdiv.attr("isexpand","F");
+				thisdiv.html("<i class='fas fa-caret-down'></i>");
+
+			});
+			div.on("click","[isexpand='F']",function(){
+
+				div.find("[isexpand='T']").each(function(){
+
+					var tempthis = $(this); 
+					var temptr = tempthis.parent().closest('tr');
+					var temprow = application.clusterTable.row(temptr);
+					temprow.child( "" ).hide();
+					tempthis.attr("isexpand","F");
+					tempthis.html("<i class='fas fa-caret-down'></i>");
+				});
+
+
+				var thisdiv = $(this);
+				var tr = $(this).parent().closest('tr');
+				var row = application.clusterTable.row( tr );
+				var data = row.data();
+				var cid = data.cid;
+
+				var renderstr="<div clstrid='"+cid+"'>";
+				renderstr+="<div><button class='btn btn-sm btn-primary' name='contrastglobal' style='font-size:11px;'>Contrast</button>&nbsp;&nbsp;<button class='btn btn-sm btn-primary' name='contrastto' style='font-size:11px;'>Contrast To</button></div>";
+
+				var marks = data.marks;
+				var markarr=[];
+				for(var i in marks){
+					markarr.push("<span name='tbgbtn' style='cursor:pointer;'>"+marks[i]+"</span>");
+				}
+
+				var negmarks = data.negmarks;
+				var negmarkarr=[];
+				for(var i in negmarks){
+					negmarkarr.push("<span name='tbgbtn' style='cursor:pointer;'>"+negmarks[i]+"</span>");
+				}
+
+				renderstr+="<div name='markgenesall'>"
+
+				if( (markarr.length+negmarkarr.length) >0){
+					renderstr+="<hr></hr>";
+				}
+				if(markarr.length>0){
+					renderstr+="<div>Positive Mark Genes:</div>";
+					renderstr+="<div name='moremark'>"+markarr.join(" , ")+"</div>";
+
+				}
+				if(negmarkarr.length>0){
+					renderstr+="<div>Negative Mark Genes:</div>";
+					renderstr+="<div name='morenegmark'>"+negmarkarr.join(" , ")+"</div>";
+				}
+				renderstr+="</div>";
+
+				renderstr+="<hr></hr><div><button class='btn btn-sm btn-warning' name='editclstr' style='font-size:11px;display:inline-block;color:white;'><i class='fas fa-edit'></i></button>&nbsp;<button class='btn btn-sm btn-danger' name='deleteclstr' style='font-size:11px;display:inline-block;'><i class='fas fa-trash-alt'></i></button>&nbsp;<button class='btn btn-sm btn-primary' name='labeltoclstr' style='font-size:11px;display:inline-block;'>Set Label</button></div>"
+										
+
+				renderstr+='</div>';
+
+				row.child( renderstr ).show();
+
+
+				thisdiv.attr("isexpand","T");
+				thisdiv.html("<i class='fas fa-caret-up'></i>");
+
+
+			});
+
+			div.on("click","[name='tbgbtn']",function(){
+
+
+				div.find("[name='tbgbtn']").css("color","black");
+				var gene = $(this).html().trim();
+				
+				var thisdiv = $(this);
+
+				$.ajax({
+						url:"/genelistSearch",
+						data:{"sampleid":application.mapid,"genestr":gene},
+						method:"post",
+						dataType:"JSON",
+						success:function(res){
+							var data= res.res;
+							var geneCount = res.count;
+
+							//alert(JSON.stringify(data))
+
+							if(geneCount===0){
+								//genesearchpanel.find("[name='genesearchdetails']").html("Gene not found");
+								alert("Gene not found");
+							}else if(geneCount ===1){
+								thisdiv.css("color","steelblue");
+								barcodesMap.redscale = d3.scaleLinear().domain([0,barcodesMap.maxexpr]).range(["#ff8080", "#800000"]);
+								barcodesMap.exprdata = res.res;
+								barcodesMap.maxexpr = res.maxval;
+								renderScatterPlotNodes(null,true);
+
+							}
+
+						}	
+
+				})
+			})
+
+			div.on("click","[ischecked]",function(){
+
+				var thisdiv = $(this);
+				var checked = thisdiv.attr("ischecked");
+
+				var thisrow=thisdiv.parent().closest("tr");
+				var dt = application.clusterTable.row(thisrow).data();
+
+				if(checked === "F"){
+
+					dt.check = true;
+					application.clusterTable.row(thisrow).data(dt);
+					thisdiv.attr("ischecked","T");
+					thisdiv.html("<i class='far fa-check-square'></i>");
+
+				}else{
+					dt.check = false;
+					application.clusterTable.row(thisrow).data(dt);
+					thisdiv.attr("ischecked","F");
+					thisdiv.html("<i class='far fa-square'></i>");
+				}
+
+				submitClstrCheckStatus();
+			});
+
+
+			div.on("click","[name='editclstr']",function(){
+				var cid = $(this).closest("[clstrid]").attr("clstrid");
+				var thistr = div.find("[cid='"+cid+"']").closest("tr");
+
+				var dt = application.clusterTable.row(thistr).data();
+
+				var cname =dt.name;
+				var thismarks = dt.marks;
+				var prechecked = dt.prerender;
+				var thisnegmarks = dt.negmarks;
+				var thiscolor = dt.color;
+		
+				bsModal.showEditModal(cid,cname,thismarks,thisnegmarks,prechecked,thiscolor);
+
+			});
+
+			div.on("click","[name='labeltoclstr']",function(){
+
+				var cid = $(this).closest("[clstrid]").attr("clstrid");
+				var thistr = div.find("[cid='"+cid+"']").closest("tr");
+				var dt = application.clusterTable.row(thistr).data();
+								
+				var cname =dt.name;
+				//init
+				$("#cover").remove();
+				$("#setlabelarea").remove();
+				$("#tempLabel").remove();
+				
+
+
+				$("#app").append("<div id='cover' style='position:absolute;width:100%;height:100%;cursor:not-allowed;background:gray;z-index:999;opacity :0.5;'></div>"); 
+				//.append("div").attr("id","cover").css('cursor', 'crosshair').css("position", "absolute").style("width", "100%").attr("height", "100%");
+				//key down esc restore
+				//scCanvas.svg.append("g").append("rect").attr("x",0).attr("y",0).attr("width",scCanvas.width).attr("height",scCanvas.height).style("fill","blue").style("z-index",9999);
+				
+				$(application.maindiv_id).append("<div id='savelabelbtns' style='position:absolute;z-index:1005;margin-left:"+(scCanvas.canvas.width-40)+"px;margin-top:6px;display:none;'><div class='form-group'><button class='btn btn-sm btn-success' style='width:33px;' name='tosave'><i class='fas fa-check'></i></button><div style='height:10px;'></div><button class='btn btn-sm btn-danger' style='width:33px;'  name='tocancel'><i class='fas fa-times'></i></button></div></div>");
+
+				scCanvas.svg.append("rect").attr("id","setlabelarea").attr("x",0).attr("y",0)
+				.attr("width",scCanvas.canvas.width).attr("height",scCanvas.canvas.height)
+				.style("fill","#AcB8E5").style("fill-opacity",0.7)
+				.style("cursor","crosshair")
+				.on("click",function(){
+					
+
+					$("[labelcid='"+cid+"']").hide();
+					$("#savelabelbtns").show();
+					$("#tempLabel").remove();
+
+					var coordinates = [0, 0];
+					coordinates = d3.mouse(this);
+					var x = coordinates[0];
+					var y = coordinates[1];
+					x= scCanvas.mainXscale.invert(x-scCanvas.marginLeft);
+					y= scCanvas.mainYscale.invert(y-scCanvas.margin);
+
+					var g = scCanvas.svg.append("g").attr("id","tempLabel").attr("xp",x).attr("yp",y).style("transform", "translate(" +(scCanvas.mainXscale(x)+scCanvas.marginLeft)+"px" + "," + (scCanvas.mainYscale(y)+scCanvas.margin)+ "px" + ")");
+					g.append("text").text(cname);
+
+				});
+
+
+				$("#savelabelbtns").find("[name='tocancel']").click(function(){
+					$("#cover").remove();
+					$("#setlabelarea").remove();
+					$("#tempLabel").remove();
+
+					$("#savelabelbtns").remove();
+
+					$("[labelcid='"+cid+"']").show();
+
+				})
+
+				
+
+				$("#savelabelbtns").find("[name='tosave']").click(function(){
+
+					var x = Number($("#tempLabel").attr("xp"));
+					var y = Number($("#tempLabel").attr("yp"));
+					if(x!==undefined){
+						$.ajax({
+							url:"/updatecluster",
+							data:{"target":"POS","clstrid":cid,"x":Number(x),"y":Number(y)},
+							method:"post",
+							dataType:"JSON",
+							success:function(data){
+
+								$("[labelcid='"+cid+"']").remove();
+								scCanvas.svg.append("g").style("transform", "translate(" + (scCanvas.mainXscale(x)+scCanvas.marginLeft)+"px" + "," +(scCanvas.mainYscale(y)+scCanvas.margin)+ "px" + ")")
+								.append("text").text(cname).attr("labelcid",cid).attr("class","clstrLabel");
+								$("#cover").remove();
+								$("#setlabelarea").remove();
+								$("#tempLabel").remove();
+
+								$("#savelabelbtns").remove();
+							},
+							error:function(){
+								alert("save label error");
+							}
+						})
+					}else{
+
+						alert("no corrediation")
+					}
+					
+
+				})
+				
+			});
+
+
+			div.on("click","[name='contrastglobal']",function(){
+					
+				var cid = $(this).closest("[clstrid]").attr("clstrid");
+
+				contrastMethod.docontrast2(cid,"ALL");
+
+							
+			});
+
+			div.on("click","[name='contrastto']",function(){
+				var cid = $(this).closest("[clstrid]").attr("clstrid");
+
+				contrastMethod.renderContrastToTable(cid,"id");
+
+			});
+
+
+			div.on("click","[name='deleteclstr']",function(){
+						
+				var cid = $(this).closest("[clstrid]").attr("clstrid");
+
+				var thistr = div.find("[cid='"+cid+"']").closest("tr");
+
+				var dt = application.clusterTable.row(thistr).data();
+				var cname =dt.name;
+
+				var thisrow = application.clusterTable.row(thistr);
+
+				$(bsModal.modalid).find(".modal-title").html("");
+				$(bsModal.modalid).find(".modal-body").html("<span>Delete Cluster <b>"+cname+"</b>?</span> &nbsp;&nbsp; <span class='btn btn-sm btn-danger' name='yes'>Yes</span>&nbsp;&nbsp;<span class='btn btn-sm btn-secondary' name='no'>No</span>");
+				$(bsModal.modalid).modal("show");
+				$(bsModal.modalid).find("[name='no']").click(function(){
+					$(bsModal.modalid).modal("hide");
+				});
+				$(bsModal.modalid).find("[name='yes']").click(function(){
+					$.ajax({
+						url:"/deleteCluster",
+						data:{ "clstrid":cid },
+						method:"post",
+						dataType:"JSON",
+						success:function(data){
+
+							$("#"+scCanvas.svgid).find("[labelcid='"+cid+"']").remove();
+
+							$(bsModal.modalid).modal("hide");
+							updatehClusterTable($("[name='clsterswitch']").val());
+						},
+						error:function(){
+							alert("save error")
+						}
+					});
+				});
+			});
+
+		}
+		function updatehClusterTable(clstrType){
+
+			$.ajax({
+				url:"/getClstrsByTypeAndMapid",
+				data:{"mapid":application.mapid,"clstrType":clstrType},
+				method:"post",
+				dataType:"JSON",
+				success:function(data){
+
+					var clstrdata = data.res;
+
+					application.clusterTable.clear();
+					
+					var tempdata = new Array(application.data.length);
+
+					
+					var tabledata=[];
+					for(var i in clstrdata){
+
+						var marks=[];
+						if("marks" in clstrdata[i]){
+							marks=clstrdata[i]["marks"]
+						}
+
+						var negmarks=[];
+						if("negmarks" in clstrdata[i]){
+
+							negmarks = clstrdata[i]["negmarks"];
+						}
+						tabledata.push({"cid":clstrdata[i]["_id"],"prerender":clstrdata[i]["prerender"],"check":clstrdata[i]["prerender"]  ,"name":clstrdata[i]["clstrName"],"marks":marks,"negmarks":negmarks,"color":clstrdata[i]["color"],"x":clstrdata[i]["x"],"y":clstrdata[i]["y"],"islabel":clstrdata[i]["label"]});
+		
+						for(var j in clstrdata[i]["cells"]){
+							tempdata[clstrdata[i]["cells"][j]]=clstrdata[i]["clstrName"];
+						}
+					}
+
+					for(var i in tempdata){
+
+						if(tempdata[i]===undefined){
+
+							application.data[i]["clstr"]="";
+						}else{
+							application.data[i]["clstr"]=tempdata[i];
+						}
+					}
+
+					application.clusterTable.rows.add(tabledata).draw();
+					submitClstrCheckStatus();
+
+				},
+				error:function(e){
+					//loading.loadingError("Error");
+				}
+			})
+
+
+		}
+
+
+
+
+		function nameMapColorByCid(cidList){
+
+
+			var res={};
+			for(var i in cidList){
+
+				var div = $(application.infodiv_id).find("[name='clusterdetailtable']").find("[cid='"+cidList[i]+"']");
+				var tr = div.closest("tr");
+				var d = application.clusterTable.row(tr).data();
+
+				var color = d.color;
+
+				res[d.name]=color;
+				
+
+			}
+			
+			return res;
+
+
+		}
+
+		function submitClstrCheckStatus(ischangeLabel=true){
+			
+			var checklist=[];
+			$(application.infodiv_id).find("[name='clusterdetailtable']").find("[ischecked]").each(function(){
+
+				var cid = $(this).attr("cid");
+				var checked = $(this).attr("ischecked");
+				if(checked === "T"){
+
+					checklist.push(cid);
+
+				}
+			})
+
+			scCanvas.clstrColors = nameMapColorByCid(checklist);
+
+			renderScatterPlot(ischangeLabel);
+
+		}
+
+		function renderInfoPanel(){
+			var panelstr='<ul class="nav nav-tabs controlpanel">';
+				panelstr+='<li class="nav-item">';
+					panelstr+='<a class="nav-link active" data-toggle="tab" href="#genesearch">Gene Profiles</a>';
+
+				panelstr+='</li>';
+				panelstr+='<li class="nav-item">';
+					panelstr+='<a class="nav-link" data-toggle="tab" href="#clustersInfo">Cell Subsets</a>';
+				panelstr+='</li>';
+
+				panelstr+='<li class="nav-item">';
+					panelstr+='<a class="nav-link" data-toggle="tab" href="#morefunc"><i class="fas fa-ellipsis-h"></i></a>';
+				panelstr+='</li>';
+							 
+			panelstr+='</ul>';
+
+			panelstr+='<div class="tab-content">';
+				panelstr+='<div id="genesearch" class="tab-pane active"><br><div name="tabcontent"></div>';
+				panelstr+='</div>';
+				panelstr+='<div id="clustersInfo" class="tab-pane fade"><br><div name="tabcontent"></div>';
+				panelstr+='</div>';
+
+				panelstr+='<div id="morefunc" class="tab-pane fade"><br><div name="tabcontent"></div>';
+				panelstr+='</div>';
+
+			panelstr+='</div>';
+
+			var div_id = application.infodiv_id;
+
+            $(div_id).html(panelstr);
+            var genesearchpanel = $(div_id).find("#genesearch").find("[name='tabcontent']");
+
+
+			var clusterpanel = $(div_id).find("#clustersInfo").find("[name='tabcontent']");
+						
+			var calculationpanel = $(div_id).find("#clstrcalculation").find("[name='tabcontent']");
+
+			var morefuncPanel = $(div_id).find("#morefunc").find("[name='tabcontent']");
+
+
+			morefuncPanel.html("<div name='morefuncToolbar'><button class='btn btn-sm btn-info' name='nnp'>NN Prediction</button></div><div name='morefunccontent' style='min-height:300px;'></div>");
+			morefuncPanel.find("[name='nnp']").click(function(){
+				var contentdiv = morefuncPanel.find("[name='morefunccontent']");
+				contentdiv.html("loading ....");
+				$.ajax({
+					url:"/getNNmodelNames",
+					method:"post",
+					dataType:"JSON",
+					success:function(res){
+						res= res.data;
+						contentdiv.html("<div style='height:13px;'></div><select class='form-control' name='nnmodelselect'></select><div style='height:13px;'></div><div name='modelaction'></div>");
+						var selectdiv=contentdiv.find("[name='nnmodelselect']");
+						for(var i in res){
+							selectdiv.append("<option value='"+res[i]+"'>"+res[i]+"</option>");
+						}
+
+						selectdiv.change(function(){
+							contentdiv.find("[name='modelaction']").html("<button class='btn btn-sm btn-primary' name='predictbtn'>Predict</button>");
+							var selectmodel = $(this).val();
+							contentdiv.find("[name='modelaction']").find("[name='predictbtn']").click(function(){
+								contentdiv.find("[name='modelaction']").html("<br><br><h5>Calculation.....<h5><br><br>")
+								$.ajax({
+									url:"/predictnnresult",
+									data:{"mapid":application.mapid,"nnmodel":selectmodel},
+									method:"post",
+									dataType:"JSON",
+									success:function(res){
+
+										if(res["status"]==="success"){
+
+											var result=res["data"];
+											var label = res["label"]
+
+											var colorMap={};
+
+
+											contentdiv.find("[name='modelaction']").html("<ul class='list-group'></ul><div style='height:13px'></div><div style='display:inline-block;'><input type='text' name='nameclustertype' class='form-control form-control-sm' style='width:160px;display:inline-block;' placeholder='cluster type name'>&nbsp;&nbsp;&nbsp;<button class='btn btn-sm btn-primary' name='predictsave' style='display:inline-block;'>Save</button></div>");
+											//render panel getRandomColor
+											var predictClusterListDiv=contentdiv.find("[name='modelaction']").find("ul");
+											var presetcolors=["#F44336","#FFEB3B","#8BC34A","#00BCD4","#2196F3","#9C27B0","#795548","#607D8B","#9E9E9E"];
+											for(var i in label){
+												var color;
+												if(Number(i)<presetcolors.length){
+													color = presetcolors[i];
+												}else{
+													color = getRandomColor();
+												} 
+												predictClusterListDiv.append("<li class='list-group-item' labelid='"+i+"' style='color:"+color+";'><i class='fas fa-circle'></i> &nbsp; <span>"+label[i]+"</span></li>");
+
+												colorMap[i]=color;
+
+											}
+
+
+											renderScatterPlotNodesForNN(result, colorMap);
+
+
+											contentdiv.find("[name='predictsave']").click(function(){
+
+												var clusterTypeName=$("[name='nameclustertype']").val();
+												var savelabels=Object.keys(label);
+												var colors=Object.keys(colorMap);
+												
+												for(var i in label){
+													savelabels[i]= label[i];
+													colors[i]=colorMap[i]
+												}
+
+												if(clusterTypeName === ""){
+
+													alert("Please input a Cluster Type Name");
+												}else{
+													$.ajax({
+														url:"/savennresult",
+														data:{"mapid":application.mapid,"cluster":result.join(","),"labels":savelabels.join(","),"clusterTypeName":clusterTypeName,"colors":colors.join(",")},
+														method:"post",
+														dataType:"JSON",
+														success:function(res){
+															if(res["status"]==="success"){
+
+																contentdiv.find("[name='modelaction']").html("success");
+
+															}else{
+																
+																alert(res["status"])
+															}
+															
+														},error:function(){
+
+															contentdiv.find("[name='modelaction']").find("[name='modelaction']").html("error")
+														}
+
+
+													})
+
+												}
+
+												
+											})
+
+										}else{
+
+
+											contentdiv.find("[name='modelaction']").html("<br><br><br><h5> Error<h5><br><br>")
+										}
+
+
+										
+									},error:function(argument) {
+										
+									}
+
+
+								})
+
+
+							})
+
+						})
+
+						selectdiv.trigger("change");
+						
+
+					},
+					error:function(){
+						contentdiv.html("load models error");
+					}
+				});
+
+
+
+			})
+
+			clusterpanel.html("<div name='sellectcelldiv' style='height:28px;'>Select cells on the left to start cluster analysis.</div><hr></hr><div name='clstractions'><select name='clsterswitch' class='form-control form-control-sm'></select><div style='height:10px;'></div><button class='btn btn-sm btn-info' name='selectall'>check all</button>&nbsp;&nbsp;<button class='btn btn-sm btn-secondary' name='unselectall'>clear all</button>&nbsp;&nbsp;<button class='btn btn-sm btn-primary' name='downloadplotbtn'><i class='fas fa-download'></i></button></div><div style='height:10px;'></div><div name='clstrdetail'> </div>");
+
+			clusterpanel.find("[name='downloadplotbtn']").click(function(){
+				
+				scCanvas.export();
+			 					
+			});
+
+			clusterpanel.find("[name='unselectall']").click(function(){
+				
+				clusterpanel.find("[ischecked='T']").each(function(){
+
+					var thisdiv = $(this);
+					var thisrow=thisdiv.parent().closest("tr");
+					var dt = application.clusterTable.row(thisrow).data();
+					dt.check=false;
+
+					application.clusterTable.row(thisrow).data(dt);
+
+				})
+
+				application.clusterTable.draw();
+
+				submitClstrCheckStatus();
+
+			});
+
+			clusterpanel.find("[name='selectall']").click(function(){
+				
+				clusterpanel.find("[ischecked='F']").each(function(){
+
+					var thisdiv = $(this);
+					var thisrow=thisdiv.parent().closest("tr");
+					var dt = application.clusterTable.row(thisrow).data();
+					dt.check=true;
+
+					application.clusterTable.row(thisrow).data(dt);
+
+				})
+
+				application.clusterTable.draw();
+
+				submitClstrCheckStatus();
+
+			});
+
+			var clsterswitch = clusterpanel.find("[name='clsterswitch']");
+
+
+			for(var i in application.clstrTypes){
+
+				if(application.clstrTypes[i]  === "cellType"){
+
+					clsterswitch.append("<option value='"+application.clstrTypes[i]+"'>"+application.clstrTypes[i]+"</option>");
+				}
+
+			}
+
+			for(var	i in application.clstrTypes){
+				if(application.clstrTypes[i] !=="cellType"){
+					clsterswitch.append("<option value='"+application.clstrTypes[i]+"'>"+application.clstrTypes[i]+"</option>");
+				}
+			}
+
+			//NEW
+			if(application.clstrTypes.length>1){
+
+				var optionstr="<option value='nofilter'> </option>";
+				for(var i in application.clstrTypes){
+					optionstr+="<option value='"+application.clstrTypes[i]+"'>"+application.clstrTypes[i]+"</option>"
+
+				}
+
+				clusterpanel.find("[name='clstractions']").append("<div style='height:6px;'></div><div class='input-group input-group-sm mb-3' style='width:240px;'><div class='input-group-prepend'><label class='input-group-text' for='filterselection'><i class='fas fa-filter'></i></label></div> <select id='filterselection' class='custom-select custom-select-sm'>"+optionstr+"</select><div class='input-group-append'><label class='input-group-text' for='filterselection' name='filterselectionappendlabel'>&nbsp;&nbsp;&nbsp;</label> </div> </div> <div class='mydropdown-content'></div> </div>");
+
+				
+				var clstrfilterselection= clusterpanel.find("[name='clstractions']").find("#filterselection");
+				clstrfilterselection.change(function(){
+					var newval = $(this).val();
+					if(newval ==="nofilter"  || newval === ""){
+
+						clusterpanel.find("[name='clstractions']").find("[name='filterselectionappendlabel']").html("&nbsp;&nbsp;&nbsp;");
+						$(".mydropdown-content").css("display",	"none");
+						application.clusterFilter=null;
+
+						renderScatterPlotNodes();
+						
+					}else{
+
+						clusterpanel.find("[name='clstractions']").find("[name='filterselectionappendlabel']").html("<div class='mydropdown mydropdown-toggle'><i class='fas fa-caret-down'></i></div>");
+
+						var dropdowncontent = clusterpanel.find("[name='clstractions']").find(".mydropdown-content");
+						dropdowncontent.html("");
+						application.clusterFilter=null;
+						clusterpanel.find("[name='clstractions']").find("[name='filterselectionappendlabel']").find(".mydropdown").mouseover(function(){
+
+							dropdowncontent.css("display","block");
+						});
+						dropdowncontent.mouseleave(function(){
+
+							dropdowncontent.css("display","none");
+						});
+						
+
+						renderFilterClustersCheckBox2(dropdowncontent,newval);
+
+					}
+
+
+				});
+				
+			}
+			
+
+			//END
+
+
+
+
+			clusterpanel.find("[name='clstrdetail']").html("<div style='overflow-x:auto;'><table class='table display' name='clusterdetailtable' style='width:100%;font-size:12px;'><thead style='display :none;'> </thead><tbody> </tbody> </table></div>");
+
+
+			application.clusterTable = clusterpanel.find("[name='clusterdetailtable']").DataTable( {
+				"searching": false,
+				"info": false,
+				"ordering": false,
+				"paging": false,
+				"scrollX": true,
+
+				"columns": [
+					{ data: "check", title: "check",width:"20px"},
+					{ data: "name", title: "name"},
+					{ data: "marks", title: "marks"},
+					{ data: "cid", title: "more"},
+				],
+
+				"data":[],
+				"columnDefs": [
+					{
+												
+						"render": function ( data, type, row ) {							
+							var check ="F";
+							var istr = "<i class='far fa-square'></i>"
+							if(data===true){
+								check="T";
+								var istr = "<i class='far fa-check-square'></i>"
+							}
+
+							return "<span style='cursor:pointer;color:steelblue;' ischecked='"+check+"' cid='"+row.cid+"'>"+istr+"</span>";
+						},
+						"targets": 0
+					},
+					{
+						"render": function ( data, type, row ) {
+							return "<span style='color:"+row.color+"'>"+data+"</span>	";
+						},
+						"targets": 1
+					},
+					{
+						"render": function ( data, type, row ) {
+							var renderstrarr=[];
+							var index=0;
+							for(var i in data){
+								if(index >2){
+									break;
+								}
+								index+=1;
+								renderstrarr.push("<span name='tbgbtn' style='cursor:pointer;'>"+data[i]+"</span>");
+							}
+							return "<div>"+renderstrarr.join(" , ")+"</div>"
+
+						},
+						"targets": 2
+					},
+					{
+						"render": function ( data, type, row ) {
+							return "<i style='color:#07b3de;cursor:pointer;font-size:13px;' isexpand='F'><i class='fas fa-caret-down'></i></i>";
+						},
+						"targets": 3
+					},
+
+				]
+
+
+			});
+
+			initClstrTablesActions(clusterpanel.find("[name='clusterdetailtable']"));
+
+			clsterswitch.on("change",function(){
+
+				var value = $(this).val();
+
+				updatehClusterTable(value);
+				//re render table
+			})
+
+			updatehClusterTable(clsterswitch.val());
+
+
+			//genesearchpanel.html("<div><div style='width:52%;display:inline-block;height:100px;'><textarea class='form-control' name='genesearcharea' style='height:100%;'></textarea></div><div style='width:2%;display:inline-block;'></div><div style='width:45%;display:inline-block;'>  <div style='height:100px;border: 0.5px;border-style: solid;border-color:#B3B3B3;border-radius: 5px; overflow-y: scroll;' id='genelistoptions'> <br></div>   </div>    </div>");
+
+			 
+			genesearchpanel.html("<div style='width:auto;display:inline-block;'><textarea name='genesearcharea' class='form-control' rows='4' style='width:220px;'></textarea></div><div style='width:188px;display:inline-block;font-size:13px;padding-left:14px;color:#111;'><span> - Paste a list of gene symbols</span><br><span> - <u name='quicksearchgenes' style='cursor:pointer;' isopen='F'>Click here</u> for cell markers</span> <br> <div id='markersdropdown-content' class='list-group'></div>   <span> - Use wildcard (e.g MMP*)</span><br><br><br></div><br>")
+			
+			/*
+			genesearchpanel.append("<div><button name='genesearchbtn' class='btn btn-info btn-sm'>Search</button>&nbsp;&nbsp;<button name='heatmapgenesearchbtn' class='btn btn-info btn-sm'><i class='fas fa-th'></i></button>&nbsp;&nbsp;<button name='cleargenesearchbtn' class='btn btn-secondary btn-sm'>Clear</button>&nbsp;&nbsp;<button name='exportgenesearchbtn' class='btn btn-dark btn-sm'><i class='fas fa-download'></i></button>&nbsp;&nbsp;<button name='uploadgenesearchbtn' class='btn btn-success btn-sm'><i class='fas fa-plus'></i></button></div><hr></hr><div name='genesearchdetails'></div>");
+			*/
+			genesearchpanel.append("<div><button name='genesearchbtn' class='btn btn-info btn-sm'>Search</button>&nbsp;&nbsp;<button name='heatmapgenesearchbtn' class='btn btn-info btn-sm'><i class='fas fa-th'></i></button>&nbsp;&nbsp;<button name='cleargenesearchbtn' class='btn btn-secondary btn-sm'>Clear</button>&nbsp;&nbsp;<button name='exportgenesearchbtn' class='btn btn-dark btn-sm'><i class='fas fa-download'></i></button></div><hr></hr><div name='genesearchdetails'></div>");
+
+			/*
+			genesearchpanel.find("[name='quicksearchgenes']").click(function(){
+				
+				var thisdiv = $(this);
+				var isopen=thisdiv.attr("isopen");
+				if(isopen==="F"){
+					$("#markersdropdown-content").css("display","block").html("<i class='fas fa-circle-notch fa-spin'></i>");
+					thisdiv.attr("isopen","T");
+
+					$.ajax({
+						url:"/getGeneMarkers",
+						method:"post",
+						dataType:"JSON",
+						success:function(res){
+							$("#markersdropdown-content").html("<div></div>");
+							var ul = $("#markersdropdown-content").find("div");
+							for(var i in res){
+								ul.append("<a class='list-group-item list-group-item-action' style='padding-top:4px;padding-bottom:4px;'><span mkname='"+i+"' style='cursor:pointer;'>"+i+"</span><span name='removebtn' class='float-right' style='cursor:pointer;'><i class='fa fa-minus-circle text-secondary'></i></span></a>");
+
+							}
+
+							ul.find("[mkname]").click(function(){
+
+								var thisname = $(this).attr("mkname");
+								var genes = res[thisname];
+								genesearchpanel.find("[name='genesearcharea']").val(genes.join("\n"));
+
+							});
+
+							ul.find("[name='removebtn']").click(function(){
+
+								var thisdivparent =$(this).parent();
+								var thisname= thisdivparent.find("[mkname]").attr("mkname");
+								var modaldiv = $(bsModal.msgmodalid);
+					
+								var modalbody = modaldiv.find(".modal-body");
+								modalbody.html("<div ><input type='password' name='markerspasswordinput' placeholder='Input admin password' class='form-control form-control-sm' style='width:186px;display:inline-block;' > &nbsp;&nbsp;&nbsp; <button class='btn btn-danger btn-sm' name='deletebtn' style='display:inline-block;'>Delete</button></div>");
+
+								modaldiv.modal("show");
+
+								modalbody.find("[name='deletebtn']").click(function(){
+								 	
+									var password = modalbody.find("[name='markerspasswordinput']").val();
+
+									if(password.length>0){
+										$.ajax({
+											url:"/deleteGeneMarkers",
+											data:{"adminpwd":password,"name":thisname},
+											method:"post",
+											dataType:"JSON",
+											dataType:"JSON",
+											success:function(res){
+												if(res.status===0){
+
+													bsModal.showMassageModal(res.msg,color="#FF0000");
+												}else{
+													bsModal.showMassageModal(res.msg,color="#00DD00");
+													thisdivparent.remove();
+												}
+
+												
+											},error:function(e){
+												bsModal.showMassageModal("error",color="#FF0000");
+											}
+
+										})
+
+
+
+									}
+
+
+								})
+
+								 
+							})
+
+
+
+
+						},error:function(argument){
+							$("#markersdropdown-content").html("error");
+						}
+							
+					})
+
+
+
+				}else{
+					$("#markersdropdown-content").css("display","none").html("");
+
+					thisdiv.attr("isopen","F")
+
+				}
+			})
+			*/
+		 
+			genesearchpanel.find("[name='quicksearchgenes']").click(function(){
+
+				var tempgenes ="cd1c mgp cd3d cdh17 csf1r ctgf trem1 cd19 muc13 pigr ak3 cd40lg dcn cd68 fcer1a c1s cd33 cd14 hck foxp3 mme ms4a1 ceacam5 f13a1 serpinh1 tpsab1 ms4a7 clu bank1 cd4 cyr61 ms4a6a gnly csf3r clec4e serpine1 clec7a il1b dmbt1 vwf lum fgf23 c5ar1 lcn2 irak3 cd28 sparc cd96 spink4 krt8 cd3g acta2 ccr7 vil1 fcgr3a mzb1 olfm4 xpnpep2 cd8a c1r cd247 epcam ncam1 ceacam1 tagln col1a2 spdef sele alpi stab1 cdhr2 cd2 c1qb thy1 fcn1 krt18 c1qa cd3e bgn";
+
+				tempgenes = tempgenes.toUpperCase().replace(/ /g,"\n")
+
+				genesearchpanel.find("[name='genesearcharea']").val(tempgenes);
+
+			})
+
+			
+
+			/*
+			genesearchpanel.find("[name='uploadgenesearchbtn']").click(function(){
+
+
+				var genestr = genesearchpanel.find("[name='genesearcharea']").val();
+				genestr = genestr.replace(/ /gi,"").replace(/\n/gi,",").toUpperCase().trim();
+				
+
+				if(genestr.length>0){ 
+
+					var modaldiv = $(bsModal.msgmodalid);
+					
+					var modalbody = modaldiv.find(".modal-body");
+					modalbody.html("<div ><input name='markersinput' type='text' placeholder='Input a name of Gene list' class='form-control form-control-sm' style='width:186px;display:inline-block;' > &nbsp;&nbsp;&nbsp; <button class='btn btn-success btn-sm' name='savebtn' style='display:inline-block;'>Save</button></div>");
+
+					modaldiv.modal("show");
+
+					modalbody.find("[name='savebtn']").click(function(){
+						var newname=$("[name='markersinput']").val().trim();
+
+						if(newname.length>0){
+							$.ajax({
+								url:"/uploadGeneMarkers",
+								data:{"genestr":genestr,"name":newname},
+								method:"post",
+								dataType:"JSON",
+								success:function(res){
+
+									if(res.status===0){
+
+										bsModal.showMassageModal(res.msg,color="#FF0000");
+									}else{
+										bsModal.showMassageModal(res.msg,color="#00DD00");
+									}
+									
+
+
+								},error:function(argument){
+
+									bsModal.showMassageModal("error",color="#FF0000");
+
+						
+								}
+
+
+							})
+
+
+
+						}
+						
+
+
+					})
+
+				}
+
+			});
+
+			*/
+
+
+			genesearchpanel.find("[name='cleargenesearchbtn']").click(function(){
+
+				genesearchpanel.find("[name='genesearcharea']").val("");
+
+			});
+
+			genesearchpanel.find("[name='exportgenesearchbtn']").click(function(){
+
+				scCanvas.export();
+
+			});
+
+
+			genesearchpanel.find("[name='heatmapgenesearchbtn']").click(function() {
+				var genestr = genesearchpanel.find("[name='genesearcharea']").val();
+				genestr = genestr.replace(/ /gi,"").replace(/\n/gi,",").toUpperCase();
+				if(genestr.length>0){
+					
+					var selectNodes = [];
+					for(var i in barcodeSelector.selectedPoints){
+						selectNodes.push(barcodeSelector.selectedPoints[i]["order"]);
+					}
+					loading.loadingDivStart(genesearchpanel.find("[name='genesearchdetails']"));
+					$.ajax({
+						url:"/genelistHeatmap",
+						data:{"mapid":application.mapid,"genestr":genestr,"selectnodes":selectNodes.join(",")},
+						method:"post",
+						dataType:"JSON",
+						success:function(res){
+							var res = res.res;
+							if(res.length===0){
+
+								genesearchpanel.find("[name='genesearchdetails']").html("Genes not found");
+							}else{
+								genesearchpanel.find("[name='genesearchdetails']").html("<div name='genesearchplot'></div>");
+								heatmap["data"]=res;
+
+								var temp=[];  
+								for(var i in res){
+									var vals=res[i]["normalize"];
+
+									for(var j in vals){
+										var val=vals[j]; 
+										if(val!==0){
+
+											var k=0;
+											for(k=0;k<temp.length;k++){
+												if(temp[k] > val){
+													break;
+												}
+
+											}
+
+											temp.splice(k,0,val);
+										}
+									}
+								}
+
+
+								heatmap["zsMax"]=3;
+
+
+								if(temp.length <=3){
+									heatmap["max"]=temp[temp.length-1];
+								}else if(temp.length>3){
+									var q1 = Math.floor(temp.length/4);
+									var q3 = Math.ceil(3*temp.length/4);
+									q1= temp[q1];
+									q3= temp[q3];
+									irq= q3-q1;
+									heatmap["max"] = Math.ceil(1.5*irq + q3);
+									
+									if(heatmap["max"] >10){
+
+										heatmap["max"]=Math.floor(heatmap["max"]/10)*10
+									}
+									if(heatmap["max"] >100){
+
+										heatmap["max"]=Math.floor(heatmap["max"]/100)*100
+									}
+									if(heatmap["max"] >1000){
+
+										heatmap["max"]=Math.floor(heatmap["max"]/1000)*1000
+									}
+								}
+
+								heatmap["countScale"] = d3.scaleLinear().domain([0,heatmap["max"]/2,heatmap["max"]]).range(["#FFFFFF","#FFA500", "#FF0000"]);
+
+
+								heatmap["zsScale"] = d3.scaleLinear().domain([-1*heatmap["zsMax"],-1*heatmap["zsMax"]/2,0,heatmap["zsMax"]/2,heatmap["zsMax"]]).range(["#00008B","#ADD8E6","#FFFFFF","#FFA500", "#FF0000"]);
+
+
+
+								//console.log(heatmap["zsScale"](-50))
+
+								renderHeatmapPlots(genesearchpanel.find("[name='genesearchdetails']").find("[name='genesearchplot']"))
+
+							}
+
+						},error:function(){
+							loading.loadingDivError(genesearchpanel.find("[name='genesearchdetails']"),"error");
+						}
+					});
+				}
+
+
+			})
+
+			
+			genesearchpanel.find("[name='genesearchbtn']").click(function(){
+				var genestr = genesearchpanel.find("[name='genesearcharea']").val();
+				genestr = genestr.replace(/ /gi,"").replace(/\n/gi,",").toUpperCase();
+
+				if(genestr.length>0){
+					loading.loadingDivStart(genesearchpanel.find("[name='genesearchdetails']"));
+					$.ajax({
+						url:"/genelistSearch",
+						data:{"sampleid":application.mapid,"genestr":genestr},
+						method:"post",
+						dataType:"JSON",
+						success:function(res){
+							var data= res.res;
+							var geneCount = res.count;
+							//alert(JSON.stringify(data))
+
+							if(geneCount===0){
+								genesearchpanel.find("[name='genesearchdetails']").html("Gene not found");
+
+							}else if(geneCount ===1){
+								var gene = res.gene;
+								var maxval = res.maxval;
+
+								barcodesMap.exprdata=data;
+								barcodesMap.maxexpr = maxval;
+								//application. = 
+
+								genesearchpanel.find("[name='genesearchdetails']").html("<div name='genesearchplot'></div>");
+								renderGenesearchPlot(genesearchpanel.find("[name='genesearchdetails']").find("[name='genesearchplot']"),gene);
+
+							}else if( ("g" in data) && geneCount ===2){
+								
+								genesearchpanel.find("[name='genesearchdetails']").html("<svg id='twogeneplot' style='width:100%;height:160px;' ></svg><hr></hr><div name='genesearchplot'></div>");
+								var totalw = Math.floor($("#twogeneplot").width());
+
+								let g1 = data["g"][0];
+								let g2 = data["g"][1];
+								let g3 = "intersection";
+
+								let c1 = data["c"][0];
+								let c2 = data["c"][1];
+								let c3 = data["c"][2];
+
+								var maxlength = Math.max(c1,c2)+c3;
+								let circleRLinear = d3.scaleLinear().domain([0,maxlength]).range([4,(140-10)/4]);
+								var r1 = (c1===0)? 0 : circleRLinear(c1);
+								var r2 = (c2===0)? 0 : circleRLinear(c2);
+								var r3 = (c3===0)? 0 : circleRLinear(c3);
+								
+								let dt1 = data["d1"] ;
+								
+								let dt2 = data["d2"] ;
+
+								let dt3 = data["d3"] ;
+
+								let color1 = "#FF0000";
+								let color2 = "#04BA76";
+								let color3 = "#E7E700";
+
+								let g = d3.select("#twogeneplot").append("g");
+								g.append("line").attr("x1",50).attr("x2",50).attr("y1",0).attr("y2",150)
+									.attr("stroke-width",1).attr("stroke","black");
+
+								g.append("line").attr("x1",40).attr("x2",220).attr("y1",140).attr("y2",140)
+									.attr("stroke-width",1).attr("stroke","black");
+
+								g.append("circle").attr("r",r1).attr("g",g1).attr("cx",50+ 180/4).attr("cy",140/4)
+								.style("fill",color1).style("stroke",color1)
+									.on("mouseover",function(){
+										let gname = g1;
+										let cellids = dt1;
+										let celllen = c1;
+										pagex = d3.event.pageX;
+										pagey = d3.event.pageY;
+										let form = "<div>";
+										if(gname.length>=1){
+											form+="&nbsp;&nbsp;<h7 style='white-space:nowrap;'>"+gname+" (only).</h7>&nbsp;&nbsp;<br>";
+										}
+										form+="&nbsp;&nbsp;<h7 style='white-space:nowrap;'>"+c1+" </h7>&nbsp;&nbsp;";
+										form+="</div>";
+										d3.select("#tooltip").style("opacity",.9)
+											.style("left",(pagex+30)+"px").style("top",(pagey-30)+"px")
+											.html(form);
+										$("#tooltip").show();
+
+									})
+									.on("mouseout",function(){
+										$("#tooltip").hide();
+									});
+
+								g.append("circle").attr("r",r2).attr("g",g2).attr("cx",50+ 3*180/4).attr("cy",3* 140/4)
+									.style("fill",color2).style("stroke",color2)
+									.on("mouseover",function(){
+										let gname = g2;
+										let cellids = dt2;
+										let celllen = c2;
+										pagex = d3.event.pageX;
+										pagey = d3.event.pageY;
+										let form = "<div>";
+										if(gname.length>=1){
+											form+="&nbsp;&nbsp;<h7 style='white-space:nowrap;'>"+gname+" (only).</h7>&nbsp;&nbsp;<br>";
+										}
+										form+="&nbsp;&nbsp;<h7 style='white-space:nowrap;'>"+c2+" </h7>&nbsp;&nbsp;"
+										form+="</div>";
+										
+										d3.select("#tooltip").style("opacity",.9)
+											.style("left",(pagex+30)+"px").style("top",(pagey-30)+"px")
+											.html(form);
+										$("#tooltip").show();
+									}).on("mouseout",function(){
+										$("#tooltip").hide();
+									});
+
+								g.append("circle").attr("r",r3).attr("g",g3).attr("cx",50+ 3*180/4).attr("cy", 140/4)
+									.style("fill",color3).style("stroke",color3).on("mouseover",function(){
+										let gname = g3;
+										let cellids = dt3;
+										let celllen = c3;
+										pagex = d3.event.pageX;
+										pagey = d3.event.pageY;
+
+										let form = "<div>";
+										if(gname.length>=1){
+											form+="&nbsp;&nbsp;<h7 style='white-space:nowrap;'>"+gname+" .</h7>&nbsp;&nbsp;<br>";
+										}
+										form+="&nbsp;&nbsp;<h7 style='white-space:nowrap;'>"+c3+" </h7>&nbsp;&nbsp;"
+										form+="</div>";
+										d3.select("#tooltip").style("opacity",.9)
+											.style("left",(pagex+30)+"px").style("top",(pagey-30)+"px")
+											.html(form);
+										$("#tooltip").show();
+									}).on("mouseout",function(){
+										$("#tooltip").hide();
+									});
+
+								g.append("text").text(g1).attr("name","fitedgene")
+									.attr("text-anchor","middle").attr("transform","translate(35,60) rotate(-90)" )
+									.style("cursor","pointer");
+
+								g.append("text").text(g2).attr("x",50+180/2).attr("y",160).attr("name","fitedgene")
+									.attr("text-anchor","middle").style("cursor","pointer");
+
+								barcodesMap.exprdata={};
+								for(var i in dt1){
+
+									barcodesMap.exprdata[dt1[i]]=color1;
+								}
+								for(var i in dt2){
+									barcodesMap.exprdata[dt2[i]]=color2;
+									
+								}
+								for(var i in dt3){
+
+									barcodesMap.exprdata[dt3[i]]=color3;
+								}
+
+								renderScatterPlotNodes(null,"2gene");
+
+								
+							}else{
+								genesearchpanel.find("[name='genesearchdetails']").html("<table name='genesearchrestable' class='display table table-striped table-bordered compact' style='width:100%;'><thead style='display:none;'><tr><th></th><th></th><th></th><th></th><th></th><th></th></tr></thead><tbody style='font-size:11px;'></tbody></table><hr></hr><div name='genesearchplot'></div>");
+								var index =0;
+								var tablestr ="";
+
+								for(var i in data){
+									if(index===0){
+										tablestr+='<tr>';
+									}
+									tablestr+="<td><span name='fitedgene' style='cursor:pointer;'>"+data[i]+"</span></td>";
+									index+=1;
+									if(index ===6){
+										tablestr+='</tr>';
+										index = 0;
+									}
+								}
+
+								if(index!==0){
+									for(var i=index;i<6;i++){
+										tablestr+="<td></td>";
+									}
+									tablestr+='</tr>'
+
+								}
+								genesearchpanel.find("[name='genesearchrestable']").find("tbody").html(tablestr);
+								genesearchpanel.find("[name='genesearchrestable']").DataTable( {
+									searching: false,
+									info: false,
+									"ordering": false,
+									"pageLength": 5,
+									"lengthChange": false,
+									"pagingType": "simple",
+									"scrollX": true
+
+								})
+							}
+
+							if(geneCount > 1){
+								genesearchpanel.on("click","[name='fitedgene']",function(){
+									var newgstr = $(this).text();
+									var newdiv= $(this);
+									$.ajax({
+										url:"/genelistSearch",
+										data:{"sampleid":application.mapid,"genestr":newgstr},
+										method:"post",
+										dataType:"JSON",
+										success:function(res2){
+											genesearchpanel.find("[name='fitedgene']").css("color","black").attr("genechecked","F");
+											newdiv.css("color","steelblue").attr("genechecked","T");
+											barcodesMap.exprdata = res2.res;
+											barcodesMap.maxexpr = res2.maxval;
+											
+											renderGenesearchPlot(genesearchpanel.find("[name='genesearchdetails']").find("[name='genesearchplot']"),newgstr);
+
+										}
+
+
+									})
+
+
+								})
+
+
+							}
+							
+
+						},
+						error:function(){
+							loading.loadingDivError(genesearchpanel.find("[name='genesearchdetails']"),"error");
+
+						}
+					});
+				}
+			});
+
+
+			$(".controlpanel").on('shown.bs.tab', function(event){
+
+				var active_tab = $(event.target).attr("href");
+
+				if(active_tab ==="#clustersInfo"){
+
+					renderScatterPlotNodes();
+				}else if(active_tab ==="#genesearch"){
+					var temp = $("#genesearch").find("[name='fitedgene'][genechecked='T']");
+					if(temp.length===1){
+						temp.trigger("click");
+					}else{
+
+						if($("#genesearch").find("[name='genesearchrestable']").length===1){
+
+						}else{
+
+							$("#genesearch").find("[name='genesearchbtn']").trigger("click");
+						}
+										
+					}
+				}else if(active_tab ==="#morefunc"){
+					$("#morefunc").find("[name='morefunccontent']").html("");
+					 
+				}
+
+			});
+
+		}
+
+		function fixmainpanel(){
+
+
+			$(application.maindiv_id).css("width",Math.floor($(application.maindiv_id).width()));
+			var fixheight= Math.floor($(application.maindiv_id).height());
+			$(application.maindiv_id).attr("fixheight",fixheight).css("height",fixheight).attr("class","");
+		}
+
+		
+		function startApplication(){
+			/*
+			window.onresize = function(event) {
+				location.reload();
+			};
+			*/
+
+			fixmainpanel();
+
+			contrastMethod.init();
+
+			$.ajax({
+
+				url:"/getMapDataByMapId",
+				data:{"mapid":application.mapid},
+				method:"post",
+				dataType:"JSON",
+				success:function(data){
+
+					application.clstrTypes = data.clstr;
+
+					application.mapName = data.info.mapname;
+
+					application.data = data.tsneData;
+
+					data=null;
+					initPlotArea();
+					renderInfoPanel();
+
+
+				},
+				error:function(e){
+					loading.loadingError("Error");
+				}
+
+			})
+
+
+		};
+
+		function renderScatterPlot(isChangeLabel){
+			renderScatterPlotNodes();
+			if(isChangeLabel===true){
+
+				renderScatterPlotLabels();
+			}
+			
+
+		}
+
+		function renderScatterPlotLabels(){
+			$(".clstrLabel").remove();
+			application.clusterTable.rows().every( function ( rowIdx, tableLoop, rowLoop ) {
+				var data = this.data();
+
+				if(data.check ===true && data.islabel ===true && data.x!==""){
+					var x = scCanvas.marginLeft+scCanvas.mainXscale(data.x);
+					var y = scCanvas.margin+scCanvas.mainYscale(data.y);
+					scCanvas.svg.append("g")
+					.style("transform", "translate(" + x+"px" + "," + y + "px" + ")")
+					.append("text").text(data.name).attr("labelcid",data.cid).attr("class","clstrLabel");
+
+				}
+
+			} );
+			
+
+		}
+
+
+		function renderScatterPlotNodesForNN( predictRes, colorMap ){
+			switchmap("scattermap");
+
+			var data = application.data;
+
+			var mainCanvas = d3.select("#"+scCanvas.id);
+			scCanvas.canvas.getContext('2d').clearRect(0, 0, scCanvas.width, scCanvas.height);
+
+			var ctx = mainCanvas.node().getContext("2d");
+
+			ctx.clearRect(0,0,scCanvas.canvas.width,scCanvas.canvas.height);
+			ctx.save();
+
+			for(var i =0;i<data.length;i++){
+				var order = data[i].order;
+				var labelid = predictRes[order];
+
+				var color ="";
+				if(labelid in colorMap){
+					color=colorMap[labelid];
+				}
+
+				
+				var x = scCanvas.mainXscale(data[i].x) ;
+				var y = scCanvas.mainYscale(data[i].y) ;
+				ctx.beginPath();
+
+				ctx.strokeStyle =node.defaultStrokeColor; //convertHex(node.defaultStrokeColor,0.8);//node.defaultStrokeColor;//convertHex(node.defaultStrokeColor,0.8);
+				ctx.lineWidth =0.7;
+				ctx.arc(x+scCanvas.marginLeft,y+scCanvas.margin,node.r,0,2*Math.PI);
+
+				ctx.closePath()
+				if(color!==""){
+					ctx.fillStyle= convertHex(color,0.8);//color;
+					ctx.fill();
+				}
+				
+				ctx.stroke();
+			}
+		}
+
+		function switchmap(maptype){
+
+
+			if(maptype ==="heatmap"){
+
+
+				$("#"+scCanvas.svgid).hide();
+				$("#"+scCanvas.id).hide();
+				$(application.maindiv_id).css("height","100%");
+				
+				var hpcanvas = document.getElementById(scCanvas.heatmapid);
+				hpcanvas.getContext('2d').clearRect(0, 0, hpcanvas.width, hpcanvas.height);
+
+
+				$("#"+scCanvas.heatmapid).show();
+
+
+				$(application.maindiv_id).css("background","white");
+				application.maptype="heatmap";
+
+
+			}else if(maptype==="scattermap"){
+				$("#"+scCanvas.svgid).show();
+				$("#"+scCanvas.id).show();
+
+				$("#"+scCanvas.heatmapid).hide();
+				heatmap={};
+				$(application.maindiv_id).css("height",$(application.maindiv_id).attr("fixheight")).css("background",scCanvas.defaultBG);
+
+				application.maptype="scattermap";
+			}
+			
+
+
+		}
+
+		function renderHeatmap(){
+			switchmap("heatmap");
+
+			console.log(heatmap.data.length*heatmap.data[0]["normalize"].length)
+
+			if(heatmap.data.length*heatmap.data[0]["normalize"].length>200000){
+
+				loading.loadingStart();
+				renderHeatmap2();
+			}else{
+				renderHeatmap3();
+			}
+			
+		}
+
+		function renderHeatmap2(){
+			console.log("temp")
+			setTimeout(renderHeatmap3, 0);
+		}
+
+		function renderHeatmap3(){
+
+			var data = heatmap.data;
+			var clstr = heatmap.clstr;
+
+			//if(hpvalsselect)
+
+			var maptype = $("[name='barsvgselection']").find("[isselected='T']").attr("hpvalsselect");
+
+
+			var min;
+			var max;
+			var hpcolorScale;
+
+			if(maptype==="ncount"){
+				min=0;
+				max=heatmap["max"];
+				hpcolorScale = heatmap["countScale"];
+
+			}else if(maptype==='zscore'){
+				min=-1*heatmap["zsMax"];
+				max=heatmap["zsMax"];
+				hpcolorScale = heatmap["zsScale"];
+
+			}
+
+			var rectW=22;
+			var rectH=22;
+			var head=150;
+
+
+			//$(application.maindiv_id).css("overflow-x","scroll")
+			var hpcanvas = document.getElementById(scCanvas.heatmapid);
+
+			var mapw = $(application.maindiv_id).width();
+			hpcanvas.width = mapw;
+			
+
+			var marginLeft = 80;
+			var mapwInner = mapw-scCanvas.margin-marginLeft;
+
+			var cellslength=0;
+			for(var i in clstr){
+				if(clstr[i]["ischeck"]===true){
+
+					cellslength+=clstr[i]["cellpos"].length;
+				}
+			}
+
+			var temprectW = mapwInner/cellslength;
+			if(rectW > temprectW){
+				rectW = temprectW;
+			}
+
+			temprectW = Math.floor(rectW*1000)/1000;
+			if(temprectW!==0){
+				rectW=temprectW
+			} 
+
+
+			var datalength = Object.keys(data).length;
+			hpcanvas.height = datalength*rectH + head + 2*scCanvas.margin
+
+			hpcanvas = d3.select("#"+scCanvas.heatmapid);
+
+			var ctx = hpcanvas.node().getContext("2d");
+			ctx.save();
+
+			var rangebarLength = 50;
+			var rangebaritemW = 9;
+			
+			for(var i=0;i<rangebarLength;i++){
+				ctx.beginPath();
+
+				ctx.rect(marginLeft+i*rangebaritemW,scCanvas.margin,rangebaritemW,rectH);
+				ctx.fillStyle= hpcolorScale(min+i*max*2/rangebarLength);//convertHex("#",0.8);
+				ctx.fill();
+				//ctx.stroke();
+				ctx.closePath()
+				
+			}
+
+			ctx.font = "13px Arial";
+			ctx.fillStyle="#000000";
+			ctx.fillText(min, marginLeft, rectH+scCanvas.margin+20);
+			ctx.fillText(max, marginLeft+rangebaritemW*(rangebarLength-1), rectH+scCanvas.margin+20);
+
+			
+			var index = 0;
+			var mappos={};
+			var posindex=0
+
+			var Hstart = rectH+scCanvas.margin+50;
+			for(var i in clstr){
+
+				var temp = clstr[i];
+				if(temp["ischeck"]===false){
+
+					continue;
+				}
+
+
+				var barlen = temp["cellpos"].length;
+				ctx.beginPath();
+				ctx.fillStyle= temp["color"]
+				ctx.rect(marginLeft+posindex,Hstart, barlen*rectW,rectH);
+				posindex=posindex+barlen*rectW;
+				ctx.fill();
+				ctx.closePath()
+
+				
+				for(var j in temp["cellpos"]){
+
+					mappos[temp["cellpos"][j]]=index;
+					index+=1;
+
+				}
+			}
+
+			//alert(JSON.stringify(data))
+
+			Hstart = rectH+scCanvas.margin+80;
+
+			ctx.beginPath();
+			ctx.strokeStyle ="#000000"; 
+
+			if(rectW>2){
+				ctx.lineWidth =0.4;
+			}else if(rectW>10){
+				ctx.lineWidth =0.7;
+			}else{
+				ctx.lineWidth =0.2;
+			}
+			
+			ctx.strokeRect(marginLeft ,Hstart ,posindex,rectH*data.length);
+
+			ctx.closePath();
+			ctx.strokeStyle=null;
+			ctx.lineWidth =null;
+
+			var index=0;
+			ctx.font = "13px Arial";
+
+			ctx.textAlign = "end";
+
+			if(maptype==="ncount"){
+				for(var i in data){
+					ctx.beginPath();
+					
+					ctx.fillStyle="#000000";
+					
+					ctx.fillText(data[i]["_id"], marginLeft-8,Hstart+(index+0.7)*rectH);
+
+					ctx.closePath();
+
+					for(var j =0 ;j<data[i]["normalize"].length;j++){
+						
+						var position = mappos[j];
+						
+						var color = hpcolorScale(data[i]["normalize"][j])
+
+						ctx.beginPath();
+
+						ctx.rect(marginLeft+position*rectW,Hstart+index*rectH, rectW,rectH);
+						ctx.fillStyle=color;
+						ctx.fill();
+						
+
+						ctx.closePath();
+						
+
+					}
+
+
+
+					index+=1;
+				}
+
+
+			}else if(maptype==="zscore"){
+
+				for(var i in data){
+					ctx.beginPath();
+					
+					ctx.fillStyle="#000000";
+					
+					ctx.fillText(data[i]["_id"], marginLeft-8,Hstart+(index+0.7)*rectH);
+
+					ctx.closePath();
+
+					for(var j =0 ;j<data[i]["normalize"].length;j++){
+						
+						var position = mappos[j];
+						var std=data[i]["std"];
+						if(std===0){
+							thisval=0;
+						}else{
+							thisval = (data[i]["normalize"][j]-data[i]["mean"])/std;
+						}
+						
+						var color = hpcolorScale( thisval )
+
+						ctx.beginPath();
+
+						ctx.rect(marginLeft+position*rectW,Hstart+index*rectH, rectW,rectH);
+						ctx.fillStyle=color;
+						ctx.fill();
+						
+
+						ctx.closePath();
+						
+
+					}
+
+
+
+					index+=1;
+				}
+
+			}
+
+
+			
+
+
+
+
+			loading.loadingEnd();
+			
+		}
+
+		function renderScatterPlotNodes(filterClstrArr=null,renderExpr=false){
+			switchmap("scattermap");
+
+
+			var data = application.data;
+			//alert(JSON.stringify(data))
+
+			var colorMap = scCanvas.clstrColors;
+
+			var mainCanvas = d3.select("#"+scCanvas.id);
+
+			scCanvas.canvas.getContext('2d').clearRect(0, 0, scCanvas.width, scCanvas.height);
+
+			var ctx = mainCanvas.node().getContext("2d");
+
+			ctx.clearRect(0,0,scCanvas.canvas.width,scCanvas.canvas.height);
+			ctx.save()
+
+			//ctx.moveTo(scCanvas.marginLeft,scCanvas.margin)
+			//alert(JSON.stringify(data))
+			for(var i =0;i<data.length;i++){
+
+				var color="";
+				if(filterClstrArr!==null){
+
+					if(filterClstrArr[i]===undefined || filterClstrArr[i]==="" ){
+
+						color="hide";
+					}
+				}
+				//var gid = "g"+data[i]["order"];
+				var x = scCanvas.mainXscale(data[i].x) ;
+				var y = scCanvas.mainYscale(data[i].y) ;
+
+				var clstr = data[i]["clstr"];
+
+
+				if(color !=="hide"){
+					if(renderExpr===false){
+						if(clstr in colorMap){
+							color= colorMap[clstr];
+
+						}
+
+						if(application.clusterFilter !==false && application.clusterFilter !== null){
+							if(data[i]["order"] in application.clusterFilter["selected"]){
+
+							}else{
+
+								color = "hide"
+							}
+
+
+						}
+
+
+					}else if(renderExpr===true){
+
+						if(i in barcodesMap.exprdata){
+							//color=barcodesMap.redscale(barcodesMap.exprdata[i])
+							//console.log(color)
+							//alert(color)
+							color = "#FF0000";
+						}
+
+					}else if(renderExpr==="2gene"){
+
+						if(i in barcodesMap.exprdata){
+							//color=barcodesMap.redscale(barcodesMap.exprdata[i])
+							//console.log(color)
+							//alert(color)
+							color = barcodesMap.exprdata[i];
+						}
+
+					}
+				}
+				
+				
+				ctx.beginPath();
+				
+				
+				ctx.strokeStyle =node.defaultStrokeColor; //convertHex(node.defaultStrokeColor,0.8);//node.defaultStrokeColor;//convertHex(node.defaultStrokeColor,0.8);
+				ctx.lineWidth =0.7;
+				ctx.arc(x+scCanvas.marginLeft,y+scCanvas.margin,node.r,0,2*Math.PI);
+
+				ctx.closePath()
+				if(color!=="" && color !=="hide"){
+					ctx.fillStyle= convertHex(color,0.8);//color;
+
+
+					ctx.fill();
+				}
+				
+				if(color ==="hide"){
+					//ctx.strokeStyle ="#FFFFFF";
+					//ctx.stroke();
+
+				}else{
+					ctx.stroke();
+				}
+				
+			}
+
+
+
+		}
+
+		function dosaveclstr(name,type,comment,markgenes,negmarkgenes,div){
+
+			var selectedcells =[];
+			for(var i in barcodeSelector.selectedPoints){
+				selectedcells.push(barcodeSelector.selectedPoints[i].order);
+			}
+
+			$.ajax({
+				url:"/savecluster",
+				data:{"sampleid":application.mapid,name:name,type:type,comment:comment,"cells":selectedcells.join(","),"marks":markgenes,"negmarks":negmarkgenes},
+				method:"post",
+				dataType:"JSON",
+				success:function(data){
+					if(data.status==="success"){
+						div.html("<span style='color:green;'>success</span>");
+
+						if(type ===$("[name='clsterswitch']").val() ){
+							updatehClusterTable(type);
+						}
+						$(bsModal.modalid).modal("hide");
+					}else{
+						div.html("<span style='color:red;'>save cluster error</span>");
+						$(bsModal.modalid).modal("hide");
+					}
+				},
+				error:function(){
+					div.html("<span style='color:red;'>save cluster error</span>");
+					$(bsModal.modalid).modal("hide");
+				}
+			})
+		}
+
+		function renderclusternameinput(clstr,div){
+
+			if(clstr ==='cellType'){
+				$.ajax({
+					url:"/getClusterClassification",
+					data:{"clstrType":clstr},
+					method:'post',
+					dataType:"JSON",
+					success:function(data){
+						data = data.clstrTypes;
+						renderClstrSelectMenu(data,div);
+					},error:function(){
+						renderClstrSelectMenu([],div);
+					}
+				});
+
+			}else{
+
+				renderClstrSelectMenu([],div);
+			}
+			
+
+		}
+
+		function renderClstrSelectMenu(data,div){
+						
+			div.html("<select type='text' name='clstrnameinput'><select>");
+			var selectdiv = div.find("[name='clstrnameinput']");
+			for(var i in data){
+				selectdiv.append("<option value='"+data[i]["_id"]+"'>"+data[i]["_id"]+"</option>");
+			}
+			selectdiv.selectize({
+				create:true
+			})
+						 
+		}
+		
+		
+
+	</script>
+
+	<script type="text/javascript">
+		
+		$(function(){
+
+			startApplication();
+			//getDataAndDrawScatterPlot();
+			
+
+
+		})
+
+	</script>
+
+</html>

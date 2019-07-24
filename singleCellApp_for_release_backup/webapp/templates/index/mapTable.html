@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html class="full-height" lang="en-US">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    
+    <title>Single Cell Explorer</title>    
+    {% include  "common/libx1.html"  %}
+
+</head>
+
+
+<body>
+
+	<div id='loadingcanvas' style="position: fixed;width: 100%;height: 100%;left:0;top:0;background :rgba(222, 222, 222, 1);z-index:9999999;" >
+		<div class="h-100" style="display: flex;justify-content: center;align-items: center;vertical-align: middle;">
+            <div class="loader">
+                  <div class="dot dot1"><i></i></div>
+                  <div class="dot dot2"><i></i></div>
+                  <div class="dot dot3"><i></i></div>
+                  <div class="dot dot4"><i></i></div>
+                  <div class="dot dot5"><i></i></div>
+                  <div class="dot dot6"><i></i></div>
+                  <div class="dot dot7"><i></i></div>
+                  <div class="dot dot8"><i></i></div>
+                  <div class="dot dot9"><i></i></div>
+            </div>
+		</div>
+
+	</div>
+	<nav class="navbar navbar-expand-sm navbar-light bg-light static-top">
+        
+        <a class="navbar-brand" href="/">   Single Cell Explorer  </a>
+        <span style='width: 60px;'></span>
+        <ul class="navbar-nav" name='applinks'>
+          <li class="nav-item" style='cursor: pointer;'>
+            <a class="nav-link" name='linktosamples' href="/">Index</a>
+          </li>
+          <li class="nav-item" style='cursor: pointer;'>
+            <a class="nav-link" name='linktoplot' href="/plots">Comparison</a>
+          </li>
+
+          <li class="nav-item" style='cursor: pointer;'>
+            <a class="nav-link" name='linktoadmin' href="/administration">Admin</a>
+          </li>
+          <!--li class="nav-item" style='cursor: pointer;'>
+            <a class="nav-link" name='linktoContrast' href="/contrast">Contrast</a>
+          </li-->
+        </ul>
+
+    </nav>
+    <div style='height: 20px;'></div>
+    <!--div class="container-fluid">
+		<div name='collapsetable'>
+			<div class="x">
+			    <div class="card-header">
+			      <a class="card-link" data-toggle="collapse" href="#collapseOne">
+			        Collapsible Group Item #1
+			      </a>
+			    </div>
+			    <div id="collapseOne" class="collapse show" >
+			      <div class="card-body">
+			        Lorem ipsum..
+			      </div>
+			    </div>
+			</div>
+
+			 
+		</div>
+	</div-->
+	<div class="container-fluid" style="height: calc(100% );">
+      <div class='row h-100' style="min-height: 340px;">
+
+      
+            <div class='col-12 h-100'>
+              <div class='card h-100' id='mainpanel'>
+                   
+                  
+
+              </div>
+            </div>
+ 
+ 
+
+    </div>
+
+
+  
+</body>
+
+<script type="text/javascript">
+
+	$(function(){
+
+
+		var diseaseCategory = "{{diseaseCategory}}";
+
+		$.ajax({
+
+			url:"/getMapInfoByDiseaseCategory",
+			data:{"diseaseCategory":diseaseCategory},
+			method:"post",
+			dataType:"JSON",
+			success:function(data){
+				var mapinfo = data.data;
+				renderTreeTable( "#mainpanel",mapinfo);
+				endLoading2();
+
+			},
+			error:function(){
+
+
+
+			}
+
+		})
+
+
+		function renderTreeTable(div_id,data){
+
+			$(div_id).html("<div style='overflow-y:auto;'><div name='diseaseinfo'></div><br><table id='sampleinfotable' class='display' style='width:100%;'></table> </div>");
+			var sampelsdatatable = $("#sampleinfotable").DataTable({
+                      "searching": false,
+                      "paging":false,
+                      "info": false,
+                      "order": [[ 0, 'desc' ], [ 1, 'asc' ]],
+                      "columns": [ 
+                          { "data": "source","title":"Source" },
+                          { "data": "subjectid","title": "Subject Id"},
+                          
+                          { "data": "disease","title": "Disease"  },
+                          { "data": "study","title": "Study"  },
+                          { "data": "samples","title": "Samples"  },
+                      ],
+                      "columnDefs": [ {
+
+                        "targets": 4,
+                        "render": function ( data, type, row, meta ) {
+                        	
+
+                        	var invo =[];
+                            var uninvo =[];
+                            var btns=[];
+                            for(var i in data){
+
+                                var sample = data[i]["sample"];
+                                var cid = data[i]["cid"];
+                                var mapname = data[i]["name"];
+                                
+                                var btnstr="<a name='linkbtn' href='/map/"+cid+"' nameName='"+mapname+"'>"+sample+"</a>";
+                                if(sample.startsWith("Invo")){
+                                    invo.push(btnstr);
+
+                                }else if(sample.startsWith("Uinvo")){
+
+                                    uninvo.push(btnstr);
+
+                                }else{
+
+                                    btns.push(btnstr);
+                                }
+
+
+                                
+                                
+                            }
+
+                            btns =invo.concat(uninvo,btns);
+							
+                            var renderstr = btns.join(",&nbsp;");
+                            
+                            return renderstr;
+                          }
+                      }],
+
+                      data:data
+
+
+            })
+
+		}
+
+
+		function startLoading2(){
+
+
+              $("#loadingcanvas").show();
+		}
+
+
+		function endLoading2(){
+
+
+              $("#loadingcanvas").hide();
+		}
+
+	}) 
+
+                    
+
+</script>
+
+</html>

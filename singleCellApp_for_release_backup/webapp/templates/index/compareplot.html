@@ -1,0 +1,930 @@
+<!DOCTYPE html>
+<html class="full-height" lang="en-US">
+  <head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+
+    
+    <title>Single Cell Explorer</title>    
+    {% include  "common/libx1.html"  %}
+  </head>
+
+  <style type="text/css">
+   
+    html, body{
+        min-height: 100% !important;
+        height: 100%;
+        min-width:860px;
+    }
+    
+    .node{
+
+      cursor: pointer;
+
+
+
+    }
+
+    .scattertooltip {  
+      position: absolute;     
+      
+      opacity: 0.9;
+      padding: 2px;       
+      font: 12px sans-serif;    
+      background: lightsteelblue;
+      background-opacity:0.7; 
+      border: 0px;
+      border-radius: 8px;     
+      pointer-events: none;
+      display: none;    
+         
+  }
+
+
+  #tooltip{
+
+      position: absolute;     
+      
+      opacity: 0.9;
+      padding: 2px;       
+      font: 12px sans-serif;    
+      background: lightsteelblue;
+      background-opacity:0.7; 
+      border: 0px;
+      border-radius: 8px;     
+      pointer-events: none;
+      display: none;    
+
+
+  }
+ 
+
+    .node_draw_path {
+            fill: none;
+            stroke-width: 1px;
+            stroke: #278BC5;
+    }
+     
+
+    .node_done_path {
+            fill: none;
+            stroke-width: 1px;
+            stroke: #278BC5;
+    }
+
+
+
+
+
+
+  </style>
+
+  <body>
+
+
+    <nav class="navbar navbar-expand-sm navbar-light bg-light static-top">
+       
+        <a class="navbar-brand" href="/">Single Cell Explorer</a>
+        <span style='width: 60px;'></span>
+        <ul class="navbar-nav" name='applinks'>
+          <li class="nav-item" style='cursor: pointer;'>
+            <a class="nav-link" name='linktosamples' href="/">Index</a>
+          </li>
+          <li class="nav-item" style='cursor: pointer;'>
+            <a class="nav-link active" name='linktoplot' href="/plots">Comparison</a>
+          </li>
+          <!--li class="nav-item" style='cursor: pointer;'>
+            <a class="nav-link" name='linktoContrast' href="/contrast">Contrast</a>
+          </li-->
+        </ul>
+         
+      
+
+
+    </nav>
+
+
+    
+    <div style="height: 13px;"></div>
+    <div class="container-fluid" style="height: calc(100% - 87px);">
+      <div class='row h-100' style="min-height: 340px;">
+
+        <div style='width: 70%;' >
+            <div class='col-12 h-100'>
+              <div class='card h-100' id='mainpanel'>
+                   
+                  
+
+              </div>
+            </div>
+
+        </div>
+
+        <div style='width: 30%;'>
+            <div class='h-100' style="margin-right: 8px;">
+              <div class='h-100' id='infopanel'  style="overflow-y: auto;">
+                  	
+
+              </div>
+            </div>
+
+        </div>
+      </div>
+
+
+    </div>
+
+
+
+     
+
+    
+
+
+    <!--div id='tooltip'></div-->    
+  
+    <script type="text/javascript">
+
+      //$("#LoadingModal").modal({backdrop: 'static', keyboard: false});
+      //$("#LoadingModal").modal({backdrop: 'static',
+      function startLoadingDiv(div){
+      	var loadingstr='<div class="h-100" style="display: flex;justify-content: center;align-items: center;vertical-align: middle;"><div class="loader"><div class="dot dot1"><i></i></div><div class="dot dot2"><i></i></div><div class="dot dot3"><i></i></div><div class="dot dot4"><i></i></div><div class="dot dot5"><i></i></div><div class="dot dot6"><i></i></div><div class="dot dot7"><i></i></div><div class="dot dot8"><i></i></div><div class="dot dot9"><i></i></div></div></div>';
+      	div.html(loadingstr);
+ 
+      }
+
+      function endLoadingDiv(div){
+      	div.html("");
+      }
+
+
+      function errorLoadingDiv(div){
+      	div.html("server error");
+      }
+
+      $(function(){
+
+        	renderPlotPage($("#mainpanel"),$("#infopanel"));
+
+        	function renderPlotPage(plotdiv,infodiv){
+
+        			startLoadingDiv(infodiv)
+
+        			$.ajax({
+                    url:"/getAllClusterStudies",
+                    method:'post',
+                    dataType:"JSON",
+                    success:function(data){
+                            
+                        endLoadingDiv(infodiv);
+
+                        infodiv.html("<div class='col-12'></div>")
+                        renderPlotSelection1(infodiv.find(".col-12"),data.data)
+
+
+                    },error:function(){
+
+                        infodiv.html("error");
+                    }
+              })
+
+        	}
+
+
+        	function renderPlotSelection1(infodiv,data){
+
+        		  var data2={};
+    	        var optstr =[];
+    	        for(var i in data){
+    	          optstr+=  "<option value='"+data[i]["_id"]+"'>"+data[i]["_id"]+"</option>" ;
+
+    	          data2[data[i]["_id"]] = data[i]["tissues"];
+    	        }
+
+    	        var renderstr ="<h6>Select a study</h6><select class='form-control form-control-sm' name='plotselect1'  >"+optstr+"</select><div name='PlotSelection2'></div>";
+
+
+
+    	        infodiv.html(renderstr);
+
+
+    	        var currentdata = data[0]["_id"];
+    	 
+
+    	        renderPlotSelection2(currentdata,data2[currentdata])
+
+
+
+    	        $("[name='plotselect1']").change(function(){
+
+
+    	        		var val = $(this).val();
+    	        		var tissues = data2[val];
+    	        		renderPlotSelection2(val,tissues);
+
+
+    	        })
+        	}
+
+
+
+      	function renderPlotSelection2(study,tissues){
+
+      		  $("[name='PlotSelection2']").html("<br><h6>Select Tissues</h6><div name='tissueselect'></div><div name='PlotSelection3'> </div>")
+          
+  	        var tissuediv = $("[name='tissueselect']");
+  	        for(var i in tissues){
+
+  	          tissuediv.append("<span name='tissuecheckbox' ischeck='F' value='"+tissues[i]+"' style='cursor:pointer;color:steelblue;'><i class='far fa-square'></i></span>&nbsp;&nbsp;<span>"+tissues[i]+"</span>  <br>");
+
+
+  	        }
+
+  	        $("[name='PlotSelection2']").find("[name='tissuecheckbox']").click(function(){
+
+  	        		var ischecked = $(this).attr("ischeck");
+  	        		if(ischecked ==="F"){
+
+  	        			$(this).attr("ischeck","T").html("<i class='far fa-check-square'></i>");
+
+
+  	        		}else if(ischecked ==="T"){
+
+
+  	        			$(this).attr("ischeck","F").html("<i class='far fa-square'></i>");
+
+  	        		}
+  	        		 
+  	        		var checkedtissue =[];
+  	        		$("[name='PlotSelection2']").find("[ischeck='T']").each(function(){
+
+  	        			var tissue = $(this).attr("value");
+  	        			checkedtissue.push(tissue);
+
+
+  	        		});
+
+  	        		if(checkedtissue.length===0){
+
+  	        			$("[name='PlotSelection3']").html("");
+  	        		}else{
+
+  	        			renderPlotSelection3(study,checkedtissue,$("[name='PlotSelection3']"));
+  	        		}
+  			    })
+        }
+  		
+    		function renderPlotSelection3(study,tissues,div){
+
+    				startLoadingDiv(div)
+    				var tissuestr = tissues.join("//,")
+      			$.ajax({
+                        url:"/getAllClusterTypesByStudyAndTissues",
+                        method:'post',
+                        data:{"study":study,"tissue":tissuestr},
+                        dataType:"JSON",
+                        success:function(data){
+                          
+                          endLoadingDiv(div);
+
+                          var data = data.data;
+                          var defaultval = "cellType";
+
+                          div.html("<br><h6>Select Cluster Type & Cluster</h6><select class='form-control form-control-sm' name='clustertypeselect'></select><br><select class='form-control form-control-sm' name='clusterselect'></select><div name='PlotSelection4'> </div>")
+
+
+
+                          div.find("[name='clusterselect']").change(function(){
+
+
+                          	 var clusterName = $(this).val();
+                             var clusterType = div.find("[name='clustertypeselect']").val();
+
+                             renderPlotSelection4($("[name='PlotSelection4']"));
+                          })
+
+
+                          if(defaultval in data){
+
+                          	div.find("[name='clustertypeselect']").html("<option value='"+defaultval+"'>"+defaultval+"</option>");
+
+                          }
+
+                          for(var i in data){
+
+                          	if(i !==defaultval){
+
+                          		div.find("[name='clustertypeselect']").append("<option value='"+i+"'>"+i+"</option>");
+
+                          	}
+
+
+
+                          }
+
+                          div.find("[name='clustertypeselect']").change(function(){
+                          		var currentval = $(this).val();
+                          		div.find("[name='clusterselect']").html("");
+                          		for(var i in data[currentval]){
+
+
+                          				div.find("[name='clusterselect']").append("<option value='"+data[currentval][i]+"'>"+data[currentval][i]+"</option>");
+
+
+                          		}
+
+                              div.find("[name='clusterselect']").trigger("change");
+
+                          });
+
+                          div.find("[name='clustertypeselect']").trigger("change");
+
+
+                        },error:function(){
+
+                            div.html("error");
+                        }
+            })
+  		  }
+  		
+
+
+
+
+    		function renderPlotSelection4(div){
+            div.html("<br><h6>Input a Gene Symbol</h6><input id='geneinput' type='text' class='form form-control form-control-sm' style='width:160px;'><br>");
+
+            div.append("<button class='btn btn-primary btn-sm' name='plotbtn'>Plots</button>&nbsp;&nbsp;&nbsp;<button name='csvbtn' class='btn btn-primary btn-sm'>CSV</button>");
+
+
+            div.find("[name='plotbtn']").click(function(){
+
+                var querydata = getJsonQueryParam();
+
+                if(querydata.gene!==""){
+
+                  runqueryPlotData( querydata,"plot");
+                }else{
+
+                  alert("input a gene")
+                }
+            
+
+            });
+
+            div.find("[name='csvbtn']").click(function(){
+
+                  var querydata = getJsonQueryParam();
+
+                  if(querydata.gene!==""){
+
+                      runqueryPlotData( querydata,"csv");
+                  
+                  }else{
+
+                    alert("input a gene")
+                  }
+                  
+                  //downloadPlotdataAsCsv(plotdata);
+
+            });
+
+
+        }
+
+
+        function getJsonQueryParam(){
+
+
+            var gene = $("#geneinput").val().trim();
+            var clusterType = $("[name='clustertypeselect']").val().trim();
+            var cluster = $("[name='clusterselect']").val().trim();
+
+
+            var tissues = [];
+            $("[name='PlotSelection2']").find("[ischeck='T']").each(function(){
+
+                    var tissue = $(this).attr("value").trim();
+                    tissues.push(tissue);
+
+
+            });
+            var tissuestr =  tissues.join("//,")
+
+
+            var study = $("[name='plotselect1']").val().trim();
+
+             return {"gene":gene,"study":study,"tissues":tissuestr,"tissuesarray":tissues,"cluster":cluster,"clusterType":clusterType};
+     
+        }
+
+        function runqueryPlotData(querydata,todo){
+           
+          startLoadingDiv($("#mainpanel"));
+
+          $.ajax({
+
+            url:"/queryComparePlotData",
+            method:'post',
+            dataType:"JSON",
+            data:querydata,
+            success:function(data){
+              
+              endLoadingDiv($("#mainpanel"));
+
+              if(todo==="plot"){
+
+              	renderPlot(data,"#mainpanel",querydata);
+
+
+
+
+              }else if(todo==="csv"){
+
+
+
+
+              }
+
+            },error:function(){
+
+              $("#mainpanel").html("error")
+            }
+
+          })
+
+
+     
+
+
+        }
+
+        function renderPlot(data,div_id,querydata){
+
+        	var divwidth = $(div_id).width();
+
+            var divheight = $(div_id).height();
+
+            
+            var gap =20;
+
+            var margin={ right:50,bottom:120,top:80, left: 70};
+
+            var plotheight = Math.floor( (divheight -2*gap - margin.top - margin.bottom )/3 );
+
+            var plotwidth = Math.floor( divwidth- margin.left-margin.right  );
+            
+
+            var svg  =  d3.select(div_id).append("svg").attr("id",'plotsvg')
+              .attr("width", divwidth  )
+              .attr("height", divheight );
+
+            
+
+            
+            var barg = svg.append("g").attr("id","barg")
+              .attr("transform",  "translate("+margin.left+"," + (margin.top) + ")");
+
+            var boxg = svg.append("g").attr("id","boxg")
+              .attr("transform",  "translate("+margin.left+"," + (margin.top+plotheight+gap) + ")");
+
+            var violing = svg.append("g").attr("id","violing")
+              .attr("transform",  "translate("+margin.left+"," + (margin.top+plotheight+gap+plotheight+gap) + ")");
+
+
+
+            var xlabelg =svg.append("g").attr("id","xlabelg")
+              .attr("transform",  "translate("+margin.left+"," + (margin.top+plotheight+gap+plotheight+gap+plotheight) + ")");
+
+            var tissuegroupg = svg.append("g").attr("id","tissueg")
+              .attr("transform",  "translate("+margin.left+"," + 30 + ")");
+
+
+            var tissuelength = Object.keys(data).length;
+            
+
+            var eachtissuelen = (divwidth-margin.left-margin.right)/tissuelength;
+
+
+
+
+            var tissuesarray = querydata["tissuesarray"];
+            var tissueorder = {};
+            var eachgraphw = eachtissuelen/ ((tissuesarray.length)+1 );
+
+            for(var i=0;i<tissuesarray.length;i++  ){
+
+            	tissueorder[tissuesarray[i]]=i+1;
+
+
+            }
+
+
+            var minv=Infinity;
+            var maxv =0;
+
+            var minv2 = Infinity;
+            var maxv2 = 0 ;
+
+            var index =0;
+            var tissuehigh=26;
+
+            for(var i in data){
+
+                var temppos = index*eachtissuelen
+                tissuegroupg.append("rect")
+                  .attr("x", temppos )
+                  .attr("y",0)
+                  .attr("width",1)
+                  .attr("height",tissuehigh)
+                  .style("fill","black")
+
+
+                var subjname = i;
+                if(subjname.startsWith( "ResecPATIENT"  )   ){
+
+                	subjname = subjname.replace("ResecPATIENT","Pat");
+
+                }else if(subjname.startsWith( "PATIENT"  )){
+
+                	subjname = subjname.replace("PATIENT","Pat");
+
+                }
+
+                tissuegroupg.append("text").text(subjname)
+                .attr("x",temppos+eachtissuelen/2).attr("y",tissuehigh/2+6)
+                .attr("text-anchor","middle")
+                .style("font-size",11);
+
+                index+=1;
+                var j=1;
+                for(var tiss in tissuesarray){
+                	
+                	xlabelg.append("g").attr("transform",  "translate("+ (temppos+j*eachgraphw) +"," + 10 + ")rotate(-90)")
+                	.append("text").text(tissuesarray[tiss])
+                	.attr("text-anchor","end");
+
+                	j+=1;
+                }
+
+
+                var subdata = data[i];
+                for(var x in subdata){
+                	var subdataMin = subdata[x]["min"];
+                	var subdataMax = subdata[x]["max"];
+
+                	var subdataMin2 = 0;
+                	var subdataMax2 = subdata[x]["p100"];
+                	if(subdataMin<minv){
+		                minv = subdataMin;
+		            }
+		            if(subdataMax>maxv){
+		                maxv = subdataMax;
+		            }
+
+		            if(subdataMin2<minv2){
+		                minv2 = subdataMin2;
+		            }
+		            if(subdataMax2>maxv2){
+		                maxv2 = subdataMax2;
+		            }
+                }
+                
+
+
+            }
+
+
+            tissuegroupg.append("rect")
+                  .attr("x", (index*eachtissuelen) )
+                  .attr("y",0)
+                  .attr("width",1)
+                  .attr("height",tissuehigh)
+                  .style("fill","black")
+
+     		
+            var xAxis = d3.axisBottom( d3.scaleLinear().range([0, plotwidth]) ).ticks(0);
+            
+
+            barg.append("g").call(xAxis).attr("transform",  "translate("+ 0 +"," + (plotheight) + ")");
+            boxg.append("g").call(xAxis).attr("transform",  "translate("+ 0 +"," + (plotheight) + ")");
+            violing.append("g").call(xAxis).attr("transform",  "translate("+ 0 +"," + (plotheight) + ")");
+
+
+            //var yAxis = d3.axisLeft( d3.scaleLinear().range([0, divheight - margin.top - margin.bottom ]) ).ticks(0);
+			//svg.append("g").call( yAxis ).attr("transform",  "translate("+ margin.left +"," + (margin.top) + ")");
+
+            var ylinerBar = d3.scaleLinear()
+                .domain([0, 1])
+                .range([plotheight,0]);
+
+
+            var ylinerBox = d3.scaleLinear()
+                .domain([minv, maxv])
+                .range([plotheight,0]);
+
+
+            var ylinerVio = d3.scaleLinear()
+            	.domain([0, maxv2])
+                .range([plotheight,0]);
+
+            var yAxis1 = d3.axisLeft(ylinerBar);
+            var yAxis2 = d3.axisLeft(ylinerBox);
+
+            svg.append('g').attr("transform", "translate("+margin.left+"," + (margin.top) + ")").call(yAxis1);
+            svg.append('g').attr("transform", "translate("+margin.left+"," + (margin.top+gap+plotheight) + ")").call(yAxis2);
+
+            svg.append('g').attr("transform", "translate("+margin.left+"," + (margin.top+plotheight+gap+plotheight+gap) + ")").call(yAxis2);
+
+            svg.append("g").attr("transform", "translate("+30+"," + (margin.top+plotheight/2) + ")rotate(-90)").append("text").text("% Positive Cells").attr("text-anchor","middle");
+            svg.append("g").attr("transform", "translate("+30+"," + (margin.top+plotheight+gap+plotheight/2) + ")rotate(-90)").append("text").text("Non-zero Counts").attr("text-anchor","middle");
+            svg.append("g").attr("transform", "translate("+30+"," + (margin.top+plotheight+gap+plotheight+gap+plotheight/2) + ")rotate(-90)").append("text").text("All Cells").attr("text-anchor","middle");
+
+
+            var boxwidth = eachgraphw*0.7;
+            var colorarr = ["#FB8072","#80b1d3","#fdb462","#8dd3c7","#b3de69","abebada","FFFFB3"];
+            var index =0;
+            for(var i in data){
+
+            	var temppos = index*eachtissuelen;
+
+            	for(var j in data[i]){
+            		var subdata = data[i][j];
+            		var temptiss = subdata["tissue"];
+
+	            	var tissorder = tissueorder[temptiss];
+	            	var color = colorarr[(tissorder-1)%colorarr.length];
+
+	            	var subpos = tissueorder[temptiss]*eachgraphw+index*eachtissuelen;
+
+	            	
+	                //var mean = subdata["mean"];
+	                var perc = subdata["perc"];
+	                var barx = subpos-boxwidth/2;
+	                var bary = ylinerBar(perc);
+	                var barh = plotheight-bary;
+
+	                barg.append("rect").attr("x",barx).attr("y",bary).attr("width",boxwidth).attr("height",barh).style("fill",color);
+
+	                var boxx1 = subpos-boxwidth/2;
+	                var boxx2 = subpos+boxwidth/2;
+
+	                var median = ylinerBox(subdata["median"]);
+	                var q1 = ylinerBox(subdata["1q"]);
+	                var q3 = ylinerBox(subdata["3q"]);
+	                var min = ylinerBox(subdata["min"]);
+	                var max = ylinerBox(subdata["max"]);
+
+
+	                boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",boxx1)
+		                .attr("x2",boxx2)
+		                .attr("y1",median)
+		                .attr("y2",median)
+		                .style("stroke-width",1);
+
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",boxx1)
+		                .attr("x2",boxx2)
+		                .attr("y1",max)
+		                .attr("y2",max)
+		                .style("stroke-width",1);
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",boxx1)
+		                .attr("x2",boxx2)
+		                .attr("y1",min)
+		                .attr("y2",min)
+		                .style("stroke-width",1);
+
+
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",boxx1)
+		                .attr("x2",boxx2)
+		                .attr("y1",q3)
+		                .attr("y2",q3)
+		                .style("stroke-width",1);
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",boxx1)
+		                .attr("x2",boxx2)
+		                .attr("y1",q1)
+		                .attr("y2",q1)
+		                .style("stroke-width",1);
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",boxx2)
+		                .attr("x2",boxx2)
+		                .attr("y1",q1)
+		                .attr("y2",q3)
+		                .style("stroke-width",1);
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",boxx1)
+		                .attr("x2",boxx1)
+		                .attr("y1",q1)
+		                .attr("y2",q3)
+		                .style("stroke-width",1);
+
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",boxx1)
+		                .attr("x2",boxx1)
+		                .attr("y1",q1)
+		                .attr("y2",q3)
+		                .style("stroke-width",1);
+
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",subpos)
+		                .attr("x2",subpos)
+		                .attr("y1",q1)
+		                .attr("y2",min)
+		                .style("stroke-width",1);
+
+
+		            boxg.append("line")
+	                	.style("stroke",color)
+	                	.attr("role","box")
+		                .attr("x1",subpos)
+		                .attr("x2",subpos)
+		                .attr("y1",q3)
+		                .attr("y2",max)
+		                .style("stroke-width",1);
+
+		            boxg.append("rect")
+	                	.style("fill",color)
+	                	.style("fill-opacity",0.5)
+	                	.attr("role","box")
+		                .attr("x",boxx1)
+		                .attr("y",q3)
+		                .attr("height",q1-q3)
+		                .attr("width",boxwidth);
+
+
+		            //box end
+
+		            var maxval = 0;
+	   				var minval =Infinity;
+	   				var values = subdata["expr"];
+	   				var tempg = violing.append("g").attr("class", "points-plot").attr("transform", "translate("+subpos+"," + 0+ ")");
+	   				for(var j in values){
+
+			   			if(values[j]>maxval){
+
+			   				maxval = values[j];
+			   			}
+			   			if(values[j]<minval){
+			   				minval = values[j];
+			   			}
+			   			/*
+			   			tempg.append("circle")
+		                    .attr("class", "point")
+		                    .attr('r', 1.6)// Options is diameter, r takes radius so divide by 2
+		                    //.style("stroke-width",0.5)
+		                    .style("fill-opacity",0.3)
+		                    .style("fill",color) 
+		                    .attr("value",values[j] )
+		                    //.style("stroke",color)
+		                    .attr("cx", addJitter(true,boxwidth))
+		                    .attr("cy", ylinerVio(values[j]  ));
+
+		                */
+			   		}
+
+			   		var tricksval = Math.floor(maxval*2.2);
+			   		var kernelval = 0.5;
+
+			   		var vwidth = boxwidth/2;
+			   		var Vy = d3.scaleLinear()
+						.domain([0, maxval])
+						.range([plotheight, ylinerVio(maxval) ]);
+
+					var vline = d3.line().curve(d3.curveLinear)
+			   			.x(function(d) { return Vx(d.x); })
+			   			.y(function(d) { return Vy(d.y); });
+
+
+			   		/*
+			   		var kearelval = maxval/(22);
+			   		if(kearelval <0.51){
+			   			kearelval = 0.51
+			   		}
+			   		*/
+
+
+		            var density = kernelDensityEstimator(kernelEpanechnikov(kernelval),Vy.ticks(  tricksval  ))(values);
+
+		            var maxwidth = 0;
+		 			for(var xx in density){
+
+		 				if(density[xx][1]>maxwidth){
+		 					maxwidth = density[xx][1]
+		 				}
+		 			}
+		 			
+
+
+		 			var Vx = d3.scaleLinear()
+						.domain([0,maxwidth])
+						.range([0, vwidth]);
+
+					var violinCoor =[];
+					for(var x in density){
+						violinCoor.push({x:-density[x][1],y:density[x][0]});
+					}
+
+					for(var x=density.length-1;x>=0;x-- ){
+						violinCoor.push({x:density[x][1],y:density[x][0]});
+					}
+
+					tempg.datum(violinCoor)
+				      .append("path")
+				      .style("fill", color)
+				      .style("fill-opacity",0.3)
+				      .style("stroke", color)
+				      .style("stroke-width", 0.4)
+				      .style("stroke-linejoin", "round")
+				      .attr("d", vline);
+
+
+
+
+            	}
+
+            	index+=1;
+            	
+
+
+            }
+
+            //alert()
+            //alert(JSON.stringify(data))
+
+
+        }
+
+    
+        function kernelDensityEstimator(kernel, X) {
+		  return function(V) {
+		    return X.map(function(x) {
+		      return [x, d3.mean(V, function(v) { return kernel(x - v); })];
+		    });
+		  };
+		}
+
+
+
+
+
+		function kernelEpanechnikov(k) {
+		  return function(v) {
+		    return Math.abs(v /= k) <= 1 ? 0.75 * (1 - v * v) / k : 0;
+		  };
+		}
+
+
+		function addJitter(doJitter, width) {
+		        if (doJitter !== true || width == 0) {
+		            return 0
+		        }
+		        return Math.floor(Math.random() * width) - width / 2;
+		}
+
+
+            
+
+      });
+
+
+    </script>
+
+
+
+
+
+
+  </body>
+</html> 
