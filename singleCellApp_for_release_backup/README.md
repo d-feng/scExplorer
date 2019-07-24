@@ -23,9 +23,9 @@ http://54.159.6.229/install.html
 #### Installation of Single Cell Explorer
 #### Update (based on ubuntu 18.04 or 16.04)
 
-#####sudo apt-get update
-#####sudo apt-get install -y build-essential
-#####sudo apt-get install -y ssh libssl-dev libffi-dev libxml2-dev libxslt1-dev zlib1g-dev zip unzip libfftw3-dev libcurl3 openssl
+##### sudo apt-get update
+##### sudo apt-get install -y build-essential
+##### sudo apt-get install -y ssh libssl-dev libffi-dev libxml2-dev libxslt1-dev zlib1g-dev zip unzip libfftw3-dev libcurl3 openssl
 
 #### Install python3
 sudo apt-get install -y python3 python3-pip python3-dev
