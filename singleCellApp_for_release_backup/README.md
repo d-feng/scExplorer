@@ -30,7 +30,8 @@ http://54.159.6.229/install.html
 #### Install python3
 
 ###### sudo apt-get install -y python3 python3-pip python3-dev
-3. Install MongoDB, create database paths, and start MongoDB server
+
+#### Install MongoDB, create database paths, and start MongoDB server
 ###### cd ~
 ###### mkdir -p mongodb
 ###### cd mongodb
