@@ -9,7 +9,6 @@ Contact: di_feng@yahoo.com
 http://singlecellexplorer.org
 http://54.159.6.229:8000/
 
-archived in manuial.zip file.
 
 ### source code, database files, python scripts for Jupyter notebook
 http://54.159.6.229/download.html
