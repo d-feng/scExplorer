@@ -6,10 +6,9 @@ Authors: Di Feng, Dechao Shan
 Contact: di_feng@yahoo.com
 
 ### Site URL: 
-http://singlecellexplorer.org
-http://54.159.6.229:8000/
+##### http://singlecellexplorer.org
 
-archived in manuial.zip file.
+##### http://54.159.6.229:8000/
 
 ### source code, database files, python scripts for Jupyter notebook
 http://54.159.6.229/download.html
