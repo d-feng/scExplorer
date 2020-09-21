@@ -1,0 +1,33 @@
+﻿--For Data registration: 
+The following items are mandatory.
+study: The name of the study, which should include all the samples as a collection. 
+species: Human, Mouse, etc
+tissue: The biological source of the samples (blood, inflamed, uninvolved etc). 
+mapType:  Currently, we support tsne, umap, and phate.
+name: The map name used in the GUI.  
+
+The following information is optional, but we encourage you to use.
+disease: This help to create a collected atlas of normal tissue or disease tissue.
+source: You can use internal or external to distinguish the data source.
+author: This indicate the contact person of the data or author who created the map in single cell explorer. 
+subjectid: Subject ID, which represent the each donor in the study, should be unique. Sometime, there are multiple tissue samples could be collected from the same individual or subject ID. 
+  
+Usage:
+For a study that collect blood, uninvolved, and involved samples from multiple subjects. We can create the following dictionary. You can also add more meta information in the dictionary.    
+
+mapinfo={       
+          “study”:”Disease Collection”,
+          “species”: “Homo sapien”,
+          “tissue”: “involved”,
+          “mapType”:”tsne”,
+          “name”:”involved sample”, 
+          “source”:”public data”,
+          “author”:”Me”,
+          “subjectid”:”CT0001”,
+          “comment”:””       
+         }
+
+--Multiple Sample Comparison
+Once you registered all the samples from a study. You can cross-compare gene expression among multiple donor/subjects within that study.  You can select 1) the study 2) the right tissue to compare, 3) the cell type 4) the gene of interest for comparison.    
+
+
