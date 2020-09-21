@@ -1,4 +1,4 @@
-# Single Cell Explorer Ver 1.0.1
+# Single Cell Explorer (ver 1.1.0)
 Thank you for visiting wiki of Single Cell Explorer. 
 Singel Cell Explorer is available open-source under the GNU LGPLv3 license. This web application only run on Linux. 
 
