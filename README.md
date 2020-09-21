@@ -9,20 +9,20 @@ Contact: di_feng@yahoo.com
 ### Site URL: 
 ##### http://singlecellexplorer.org
 
-##### http://54.159.6.229:8000/
+##### http:18.204.165.197
 
 ### Source code, database files, python scripts for Jupyter notebook
-http://54.159.6.229/download.html
+http://18.204.165.197/download.html
 
 ### Jupyter Notebook walkthrough 
-http://54.159.6.229/analysis.html
+http://18.204.165.197/analysis.html
 
 ### Installation guide 
-http://54.159.6.229/install.html
+http://18.204.165.197/install.html
 
 ### Installation of Single Cell Explorer from Source
 
-##### quickest way: run setup shell scripts from http://54.159.6.229/downloads/setupSCexplorer.sh
+##### quickest way: run setup shell scripts from http://18.204.165.197/downloads/setupSCexplorer.sh
 
 ### From console (step by step)
 #### Update (based on ubuntu 18.04 or 16.04)
@@ -47,7 +47,7 @@ http://54.159.6.229/install.html
 
 #### Load database schema & sample data into MongoDB
 ###### cd ~/mongodb/
-###### wget http://54.159.6.229/downloads/scDB.zip
+###### wget http://18.204.165.197/downloads/scDB.zip
 ###### unzip scDB.zip
 ###### mkdir dumpfiles
 ###### mv scDB dumpfiles
@@ -62,7 +62,7 @@ http://54.159.6.229/install.html
 ###### mkdir singleCell
 ###### cd singleCell
 
-###### wget http://54.159.6.229/downloads/singleCellExplorer.zip
+###### wget http://18.204.165.197/downloads/singleCellExplorer.zip
 ###### unzip singleCellExplorer.zip
 ###### cd singleCellExplorer
 
